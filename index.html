@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dead Signal — Logo</title>
+<title>Dead Signal — A Murder Mystery Campaign</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Electrolize&family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap');
 
@@ -12,46 +12,35 @@
   :root {
     --cyan: #00f0ff;
     --cyan-dim: #00707a;
+    --cyan-bg: rgba(0,240,255,0.04);
     --red: #ff2244;
     --red-dim: #6b0015;
     --white: #e0e8f0;
     --dark: #04080c;
+    --dark-card: #080e14;
     --signal-green: #00ff88;
+    --body-text: #8899aa;
   }
+
+  html { scroll-behavior: smooth; }
 
   body {
     background: var(--dark);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    overflow: hidden;
-    font-family: 'Orbitron', sans-serif;
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--body-text);
+    line-height: 1.7;
+    overflow-x: hidden;
   }
 
   /* ── starfield ── */
-  .starfield {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    overflow: hidden;
-  }
-  .starfield canvas {
-    width: 100%;
-    height: 100%;
-  }
+  .starfield { position: fixed; inset: 0; z-index: 0; overflow: hidden; }
+  .starfield canvas { width: 100%; height: 100%; }
 
   /* ── floating dust particles ── */
-  .dust {
-    position: fixed;
-    inset: 0;
-    z-index: 1;
-    pointer-events: none;
-  }
+  .dust { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
   .dust span {
     position: absolute;
-    width: var(--size, 3px);
-    height: var(--size, 3px);
+    width: var(--size, 3px); height: var(--size, 3px);
     background: radial-gradient(circle, rgba(0,240,255,0.4), transparent);
     border-radius: 50%;
     animation: drift var(--drift-dur, 20s) linear infinite;
@@ -64,225 +53,194 @@
     100% { transform: translate(var(--dx, 100px), var(--dy, -200px)) scale(1.5); opacity: 0; }
   }
 
-  /* ── main container ── */
-  .logo-container {
+  /* ── overlays ── */
+  .scanlines {
+    position: fixed; inset: 0; z-index: 100; pointer-events: none;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
+  }
+  .vignette {
+    position: fixed; inset: 0; z-index: 99; pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.6) 100%);
+  }
+  .noise {
+    position: fixed; inset: -50%; z-index: 98; pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-size: 256px 256px; opacity: 0.025;
+    animation: noiseShift 0.5s steps(5) infinite;
+  }
+  @keyframes noiseShift {
+    0%   { transform: translate(0, 0); }
+    20%  { transform: translate(-5%, -5%); }
+    40%  { transform: translate(3%, 2%); }
+    60%  { transform: translate(-2%, 4%); }
+    80%  { transform: translate(4%, -3%); }
+    100% { transform: translate(0, 0); }
+  }
+  .hex-grid {
+    position: fixed; inset: 0; z-index: 0; opacity: 0.02;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='52' viewBox='0 0 60 52' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 15v22L30 52 0 37V15z' fill='none' stroke='%2300f0ff' stroke-width='0.5'/%3E%3C/svg%3E");
+    background-size: 60px 52px;
+  }
+
+  /* ══════════════════════════════════════
+     HERO SECTION (logo)
+     ══════════════════════════════════════ */
+  .hero {
     position: relative;
     z-index: 10;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .logo-container {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     padding: 80px 120px;
   }
 
-  /* ── audio toggle ── */
-  .audio-toggle {
-    position: fixed;
-    bottom: 20px;
+  /* ── scroll indicator ── */
+  .scroll-hint {
+    position: absolute;
+    bottom: 30px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 200;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 3px;
-    color: var(--cyan-dim);
-    background: rgba(0,240,255,0.05);
-    border: 1px solid var(--cyan-dim);
-    padding: 8px 24px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-transform: uppercase;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
     opacity: 0;
-    animation: fadeIn 1s ease forwards 3.5s;
+    animation: fadeIn 1s ease forwards 4s, bobDown 2s ease-in-out infinite 4s;
+  }
+  .scroll-hint span {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--cyan-dim);
+    text-transform: uppercase;
+  }
+  .scroll-hint .arrow {
+    width: 20px; height: 20px;
+    border-right: 2px solid var(--cyan-dim);
+    border-bottom: 2px solid var(--cyan-dim);
+    transform: rotate(45deg);
+  }
+  @keyframes bobDown {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50%      { transform: translateX(-50%) translateY(8px); }
+  }
+
+  /* ── audio toggle ── */
+  .audio-toggle {
+    position: fixed; bottom: 20px; right: 20px; z-index: 200;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px; letter-spacing: 3px;
+    color: var(--cyan-dim);
+    background: rgba(4,8,12,0.85);
+    border: 1px solid var(--cyan-dim);
+    padding: 8px 24px; cursor: pointer;
+    transition: all 0.3s ease; text-transform: uppercase;
+    opacity: 0; animation: fadeIn 1s ease forwards 3.5s;
   }
   .audio-toggle:hover {
-    color: var(--cyan);
-    border-color: var(--cyan);
+    color: var(--cyan); border-color: var(--cyan);
     background: rgba(0,240,255,0.1);
     box-shadow: 0 0 15px rgba(0,240,255,0.15);
   }
-  .audio-toggle.active {
-    color: var(--cyan);
-    border-color: var(--cyan);
-  }
+  .audio-toggle.active { color: var(--cyan); border-color: var(--cyan); }
 
-
-  /* ── the signal waveform ── */
-  .waveform-wrapper {
-    position: relative;
-    width: 600px;
-    height: 100px;
-    margin-bottom: 10px;
-    overflow: visible;
-  }
-  .waveform-svg {
-    width: 100%;
-    height: 100%;
-    overflow: visible;
-    filter: drop-shadow(0 0 8px rgba(0,240,255,0.5));
-  }
+  /* ── waveform ── */
+  .waveform-wrapper { position: relative; width: 600px; height: 100px; margin-bottom: 10px; overflow: visible; }
+  .waveform-svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 0 8px rgba(0,240,255,0.5)); }
   .wave-path {
-    fill: none;
-    stroke: var(--cyan);
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-dasharray: 1200;
-    stroke-dashoffset: 1200;
+    fill: none; stroke: var(--cyan); stroke-width: 2; stroke-linecap: round;
+    stroke-dasharray: 1200; stroke-dashoffset: 1200;
     animation: drawWave 3s ease forwards, pulseGlow 3s ease-in-out infinite 3s;
   }
   .wave-path-ghost {
-    fill: none;
-    stroke: var(--red);
-    stroke-width: 1.5;
-    stroke-linecap: round;
-    opacity: 0.25;
-    stroke-dasharray: 1200;
-    stroke-dashoffset: 1200;
-    animation: drawWave 3s ease forwards 0.15s;
-    filter: blur(2px);
+    fill: none; stroke: var(--red); stroke-width: 1.5; stroke-linecap: round;
+    opacity: 0.25; stroke-dasharray: 1200; stroke-dashoffset: 1200;
+    animation: drawWave 3s ease forwards 0.15s; filter: blur(2px);
   }
-  @keyframes drawWave {
-    to { stroke-dashoffset: 0; }
-  }
+  @keyframes drawWave { to { stroke-dashoffset: 0; } }
   @keyframes pulseGlow {
     0%, 100% { filter: drop-shadow(0 0 4px rgba(0,240,255,0.4)); stroke-width: 2; }
     50%      { filter: drop-shadow(0 0 16px rgba(0,240,255,0.8)); stroke-width: 2.5; }
   }
-
-  /* ── scanning beam across the waveform ── */
   .scan-beam {
-    position: absolute;
-    top: 0;
-    left: -2px;
-    width: 4px;
-    height: 100%;
+    position: absolute; top: 0; left: -2px; width: 4px; height: 100%;
     background: linear-gradient(180deg, transparent, var(--cyan), transparent);
-    opacity: 0;
-    animation: scanAcross 4s linear infinite 3.5s;
+    opacity: 0; animation: scanAcross 4s linear infinite 3.5s;
     box-shadow: 0 0 20px 6px rgba(0,240,255,0.3);
   }
   @keyframes scanAcross {
-    0%   { left: -2%; opacity: 0; }
-    5%   { opacity: 0.8; }
-    95%  { opacity: 0.8; }
-    100% { left: 102%; opacity: 0; }
+    0%   { left: -2%; opacity: 0; } 5% { opacity: 0.8; }
+    95%  { opacity: 0.8; } 100% { left: 102%; opacity: 0; }
   }
 
-  /* ── DEAD title ── */
+  /* ── titles ── */
   .title-dead {
-    font-family: 'Electrolize', sans-serif;
-    font-weight: 400;
-    font-size: 120px;
-    letter-spacing: 36px;
-    text-indent: 36px;
+    font-family: 'Electrolize', sans-serif; font-weight: 400;
+    font-size: 120px; letter-spacing: 36px; text-indent: 36px;
     color: transparent;
     background: linear-gradient(180deg, #ffffff 0%, #90a0b0 40%, #304050 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    position: relative;
-    line-height: 1;
-    animation: revealTitle 1s ease forwards 0.5s;
-    opacity: 0;
+    -webkit-background-clip: text; background-clip: text;
+    position: relative; line-height: 1;
+    animation: revealTitle 1s ease forwards 0.5s; opacity: 0;
     filter: drop-shadow(0 0 30px rgba(0,240,255,0.15));
   }
   .title-dead::before {
-    content: 'DEAD';
-    position: absolute;
-    inset: 0;
-    color: transparent;
+    content: 'DEAD'; position: absolute; inset: 0; color: transparent;
     background: linear-gradient(180deg, var(--cyan) 0%, transparent 60%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    opacity: 0.15;
-    filter: blur(1px);
+    -webkit-background-clip: text; background-clip: text;
+    opacity: 0.15; filter: blur(1px);
   }
   @keyframes revealTitle {
     0%   { opacity: 0; transform: translateY(10px); letter-spacing: 60px; }
     100% { opacity: 1; transform: translateY(0); letter-spacing: 36px; }
   }
-
-  /* ── SIGNAL title ── */
   .title-signal {
-    font-family: 'Electrolize', sans-serif;
-    font-weight: 400;
-    font-size: 78px;
-    letter-spacing: 22px;
-    text-indent: 22px;
-    color: var(--cyan);
-    position: relative;
-    line-height: 1;
-    margin-top: -8px;
-    animation: revealSignal 1.2s ease forwards 1s;
-    opacity: 0;
-    text-shadow:
-      0 0 10px rgba(0,240,255,0.5),
-      0 0 40px rgba(0,240,255,0.2),
-      0 0 80px rgba(0,240,255,0.1);
+    font-family: 'Electrolize', sans-serif; font-weight: 400;
+    font-size: 78px; letter-spacing: 22px; text-indent: 22px;
+    color: var(--cyan); position: relative; line-height: 1; margin-top: -8px;
+    animation: revealSignal 1.2s ease forwards 1s; opacity: 0;
+    text-shadow: 0 0 10px rgba(0,240,255,0.5), 0 0 40px rgba(0,240,255,0.2), 0 0 80px rgba(0,240,255,0.1);
   }
   @keyframes revealSignal {
     0%   { opacity: 0; transform: translateY(-10px); letter-spacing: 50px; }
     100% { opacity: 1; transform: translateY(0); letter-spacing: 22px; }
   }
 
-  /* ── glitch effect on both titles ── */
-  .glitch-wrapper {
-    position: relative;
-    display: inline-block;
-  }
-  .glitch-wrapper::before,
-  .glitch-wrapper::after {
-    content: attr(data-text);
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    overflow: hidden;
-    pointer-events: none;
+  /* ── glitch ── */
+  .glitch-wrapper { position: relative; display: inline-block; }
+  .glitch-wrapper::before, .glitch-wrapper::after {
+    content: attr(data-text); position: absolute; top: 0; left: 0; right: 0;
+    overflow: hidden; pointer-events: none;
   }
   .glitch-dead::before {
-    font-family: 'Electrolize', sans-serif;
-    font-weight: 400;
-    font-size: 120px;
-    letter-spacing: 36px;
-    color: transparent;
-    background: linear-gradient(180deg, #ffffff 0%, #90a0b0 40%, #304050 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    animation: glitchTop 6s ease-in-out infinite;
-    clip-path: inset(0 0 65% 0);
-    text-shadow: -3px 0 var(--red);
+    font-family: 'Electrolize', sans-serif; font-weight: 400; font-size: 120px; letter-spacing: 36px;
+    color: transparent; background: linear-gradient(180deg, #ffffff 0%, #90a0b0 40%, #304050 100%);
+    -webkit-background-clip: text; background-clip: text;
+    animation: glitchTop 6s ease-in-out infinite; clip-path: inset(0 0 65% 0); text-shadow: -3px 0 var(--red);
   }
   .glitch-dead::after {
-    font-family: 'Electrolize', sans-serif;
-    font-weight: 400;
-    font-size: 120px;
-    letter-spacing: 36px;
-    color: transparent;
-    background: linear-gradient(180deg, #ffffff 0%, #90a0b0 40%, #304050 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    animation: glitchBottom 6s ease-in-out infinite 0.1s;
-    clip-path: inset(60% 0 0 0);
-    text-shadow: 3px 0 var(--cyan);
+    font-family: 'Electrolize', sans-serif; font-weight: 400; font-size: 120px; letter-spacing: 36px;
+    color: transparent; background: linear-gradient(180deg, #ffffff 0%, #90a0b0 40%, #304050 100%);
+    -webkit-background-clip: text; background-clip: text;
+    animation: glitchBottom 6s ease-in-out infinite 0.1s; clip-path: inset(60% 0 0 0); text-shadow: 3px 0 var(--cyan);
   }
   .glitch-signal::before {
-    font-family: 'Electrolize', sans-serif;
-    font-weight: 400;
-    font-size: 78px;
-    letter-spacing: 22px;
-    color: var(--cyan);
-    animation: glitchTop 5s ease-in-out infinite 2s;
-    clip-path: inset(0 0 60% 0);
-    text-shadow: -2px 0 var(--red);
+    font-family: 'Electrolize', sans-serif; font-weight: 400; font-size: 78px; letter-spacing: 22px;
+    color: var(--cyan); animation: glitchTop 5s ease-in-out infinite 2s;
+    clip-path: inset(0 0 60% 0); text-shadow: -2px 0 var(--red);
   }
   .glitch-signal::after {
-    font-family: 'Electrolize', sans-serif;
-    font-weight: 400;
-    font-size: 78px;
-    letter-spacing: 22px;
-    color: var(--cyan);
-    animation: glitchBottom 5s ease-in-out infinite 2.1s;
-    clip-path: inset(55% 0 0 0);
-    text-shadow: 2px 0 var(--signal-green);
+    font-family: 'Electrolize', sans-serif; font-weight: 400; font-size: 78px; letter-spacing: 22px;
+    color: var(--cyan); animation: glitchBottom 5s ease-in-out infinite 2.1s;
+    clip-path: inset(55% 0 0 0); text-shadow: 2px 0 var(--signal-green);
   }
   @keyframes glitchTop {
     0%, 88%, 92%, 100% { transform: translateX(0); opacity: 0; }
@@ -295,240 +253,362 @@
     91.5% { transform: translateX(-5px) skewX(-1deg); opacity: 1; }
   }
 
-  /* ── horizontal rule lines ── */
+  /* ── hero decorations ── */
   .hr-line {
-    width: 520px;
-    height: 1px;
+    width: 520px; height: 1px;
     background: linear-gradient(90deg, transparent, var(--cyan-dim), var(--cyan), var(--cyan-dim), transparent);
-    position: relative;
-    opacity: 0;
-    animation: fadeIn 1s ease forwards 1.5s;
+    position: relative; opacity: 0; animation: fadeIn 1s ease forwards 1.5s;
   }
   .hr-line.top { margin-bottom: 18px; }
   .hr-line.bottom { margin-top: 18px; }
   .hr-line::before {
-    content: '';
-    position: absolute;
-    top: -2px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 8px;
-    height: 5px;
-    background: var(--cyan);
-    box-shadow: 0 0 10px var(--cyan);
+    content: ''; position: absolute; top: -2px; left: 50%; transform: translateX(-50%);
+    width: 8px; height: 5px; background: var(--cyan); box-shadow: 0 0 10px var(--cyan);
     clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
   }
-  .hr-line.bottom::before {
-    top: auto;
-    bottom: -2px;
-    clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
-  }
-
-  /* ── subtitle ── */
+  .hr-line.bottom::before { top: auto; bottom: -2px; clip-path: polygon(0% 0%, 100% 0%, 50% 100%); }
   .subtitle {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 14px;
-    letter-spacing: 10px;
-    text-indent: 10px;
-    color: var(--cyan-dim);
-    text-transform: uppercase;
-    margin-top: 22px;
-    opacity: 0;
+    font-family: 'Share Tech Mono', monospace; font-size: 14px;
+    letter-spacing: 10px; text-indent: 10px; color: var(--cyan-dim);
+    text-transform: uppercase; margin-top: 22px; opacity: 0;
     animation: fadeIn 1.5s ease forwards 2s;
   }
-
-  /* ── telemetry data readout ── */
   .telemetry {
-    position: absolute;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 10px;
-    color: var(--cyan-dim);
-    opacity: 0;
-    animation: fadeIn 1s ease forwards 2.5s;
-    white-space: nowrap;
-    letter-spacing: 2px;
+    position: absolute; font-family: 'Share Tech Mono', monospace; font-size: 10px;
+    color: var(--cyan-dim); opacity: 0; animation: fadeIn 1s ease forwards 2.5s;
+    white-space: nowrap; letter-spacing: 2px;
   }
-  .telemetry.top-left {
-    top: 12px;
-    left: 20px;
-  }
-  .telemetry.top-right {
-    top: 12px;
-    right: 20px;
-    text-align: right;
-  }
-  .telemetry.bottom-left {
-    bottom: 12px;
-    left: 20px;
-  }
-  .telemetry.bottom-right {
-    bottom: 12px;
-    right: 20px;
-    text-align: right;
-  }
-  .telemetry .blink {
-    animation: blink 1.5s step-end infinite;
-  }
-  @keyframes blink {
-    0%, 50% { opacity: 1; }
-    51%, 100% { opacity: 0; }
-  }
-  .telemetry .val {
-    color: var(--cyan);
-  }
-
-  /* ── corner brackets ── */
-  .corner {
-    position: absolute;
-    width: 30px;
-    height: 30px;
-    opacity: 0;
-    animation: fadeIn 1s ease forwards 2s;
-  }
-  .corner::before, .corner::after {
-    content: '';
-    position: absolute;
-    background: var(--cyan-dim);
-  }
-  .corner.tl { top: 0; left: 0; }
-  .corner.tr { top: 0; right: 0; }
-  .corner.bl { bottom: 0; left: 0; }
-  .corner.br { bottom: 0; right: 0; }
+  .telemetry.top-left { top: 12px; left: 20px; }
+  .telemetry.top-right { top: 12px; right: 20px; text-align: right; }
+  .telemetry.bottom-left { bottom: 12px; left: 20px; }
+  .telemetry.bottom-right { bottom: 12px; right: 20px; text-align: right; }
+  .telemetry .blink { animation: blink 1.5s step-end infinite; }
+  @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+  .telemetry .val { color: var(--cyan); }
+  .corner { position: absolute; width: 30px; height: 30px; opacity: 0; animation: fadeIn 1s ease forwards 2s; }
+  .corner::before, .corner::after { content: ''; position: absolute; background: var(--cyan-dim); }
+  .corner.tl { top: 0; left: 0; } .corner.tr { top: 0; right: 0; }
+  .corner.bl { bottom: 0; left: 0; } .corner.br { bottom: 0; right: 0; }
   .corner.tl::before, .corner.bl::before { left: 0; width: 2px; }
   .corner.tr::before, .corner.br::before { right: 0; width: 2px; }
-  .corner.tl::after, .corner.tr::after   { top: 0; height: 2px; }
-  .corner.bl::after, .corner.br::after   { bottom: 0; height: 2px; }
+  .corner.tl::after, .corner.tr::after { top: 0; height: 2px; }
+  .corner.bl::after, .corner.br::after { bottom: 0; height: 2px; }
   .corner.tl::before, .corner.tr::before { top: 0; height: 30px; }
   .corner.bl::before, .corner.br::before { bottom: 0; height: 30px; }
-  .corner.tl::after, .corner.bl::after   { left: 0; width: 30px; }
-  .corner.tr::after, .corner.br::after   { right: 0; width: 30px; }
-
-  /* ── scanlines overlay ── */
-  .scanlines {
-    position: fixed;
-    inset: 0;
-    z-index: 100;
-    pointer-events: none;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0,0,0,0.08) 2px,
-      rgba(0,0,0,0.08) 4px
-    );
-  }
-
-  /* ── CRT vignette ── */
-  .vignette {
-    position: fixed;
-    inset: 0;
-    z-index: 99;
-    pointer-events: none;
-    background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.6) 100%);
-  }
-
-  /* ── noise overlay ── */
-  .noise {
-    position: fixed;
-    inset: -50%;
-    z-index: 98;
-    pointer-events: none;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-    background-size: 256px 256px;
-    opacity: 0.025;
-    animation: noiseShift 0.5s steps(5) infinite;
-  }
-  @keyframes noiseShift {
-    0%   { transform: translate(0, 0); }
-    20%  { transform: translate(-5%, -5%); }
-    40%  { transform: translate(3%, 2%); }
-    60%  { transform: translate(-2%, 4%); }
-    80%  { transform: translate(4%, -3%); }
-    100% { transform: translate(0, 0); }
-  }
-
-  /* ── small signal strength bars ── */
-  .signal-bars {
-    display: flex;
-    gap: 3px;
-    align-items: flex-end;
-    margin-top: 20px;
-    opacity: 0;
-    animation: fadeIn 1s ease forwards 2.2s;
-  }
-  .signal-bars .bar {
-    width: 5px;
-    background: var(--cyan);
-    opacity: 0.3;
-    animation: barPulse 2s ease-in-out infinite;
-    animation-delay: var(--bar-delay, 0s);
-  }
-  @keyframes barPulse {
-    0%, 100% { opacity: 0.15; }
-    50%      { opacity: 0.9; box-shadow: 0 0 6px rgba(0,240,255,0.5); }
-  }
-
-  /* ── status line with typing effect ── */
+  .corner.tl::after, .corner.bl::after { left: 0; width: 30px; }
+  .corner.tr::after, .corner.br::after { right: 0; width: 30px; }
+  .signal-bars { display: flex; gap: 3px; align-items: flex-end; margin-top: 20px; opacity: 0; animation: fadeIn 1s ease forwards 2.2s; }
+  .signal-bars .bar { width: 5px; background: var(--cyan); opacity: 0.3; animation: barPulse 2s ease-in-out infinite; animation-delay: var(--bar-delay, 0s); }
+  @keyframes barPulse { 0%, 100% { opacity: 0.15; } 50% { opacity: 0.9; box-shadow: 0 0 6px rgba(0,240,255,0.5); } }
   .status-line {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 11px;
-    color: var(--red);
-    letter-spacing: 3px;
-    margin-top: 28px;
-    opacity: 0;
-    animation: fadeIn 0.5s ease forwards 3s;
-    text-shadow: 0 0 10px rgba(255,34,68,0.4);
+    font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--red);
+    letter-spacing: 3px; margin-top: 28px; opacity: 0;
+    animation: fadeIn 0.5s ease forwards 3s; text-shadow: 0 0 10px rgba(255,34,68,0.4);
   }
   .status-line .cursor {
-    display: inline-block;
-    width: 7px;
-    height: 13px;
-    background: var(--red);
-    vertical-align: text-bottom;
-    animation: blink 1s step-end infinite;
-    margin-left: 2px;
+    display: inline-block; width: 7px; height: 13px; background: var(--red);
+    vertical-align: text-bottom; animation: blink 1s step-end infinite; margin-left: 2px;
   }
-
-  /* ── the flatline that crosses through "DEAD" ── */
   .flatline {
-    position: absolute;
-    top: 50%;
-    left: -40px;
-    right: -40px;
-    height: 2px;
-    transform: translateY(14px);
-    opacity: 0;
-    animation: flatlineIn 2s ease forwards 2.8s;
+    position: absolute; top: 50%; left: -40px; right: -40px; height: 2px;
+    transform: translateY(14px); opacity: 0; animation: flatlineIn 2s ease forwards 2.8s;
   }
   .flatline::before {
-    content: '';
-    position: absolute;
-    inset: 0;
+    content: ''; position: absolute; inset: 0;
     background: linear-gradient(90deg, transparent, var(--red-dim), var(--red), var(--red-dim), transparent);
     animation: flatlinePulse 3s ease-in-out infinite 4.8s;
   }
-  @keyframes flatlineIn {
-    0%   { opacity: 0; }
-    100% { opacity: 0.6; }
-  }
-  @keyframes flatlinePulse {
-    0%, 100% { opacity: 1; filter: brightness(1); }
-    50%      { opacity: 0.5; filter: brightness(1.5); }
+  @keyframes flatlineIn { 0% { opacity: 0; } 100% { opacity: 0.6; } }
+  @keyframes flatlinePulse { 0%, 100% { opacity: 1; filter: brightness(1); } 50% { opacity: 0.5; filter: brightness(1.5); } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  /* ══════════════════════════════════════
+     CONTENT SECTIONS
+     ══════════════════════════════════════ */
+  .page-content {
+    position: relative;
+    z-index: 10;
   }
 
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
+  .section {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 100px 40px;
   }
 
-  /* ── hexagonal grid background element ── */
-  .hex-grid {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    opacity: 0.02;
-    background-image: url("data:image/svg+xml,%3Csvg width='60' height='52' viewBox='0 0 60 52' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 15v22L30 52 0 37V15z' fill='none' stroke='%2300f0ff' stroke-width='0.5'/%3E%3C/svg%3E");
-    background-size: 60px 52px;
+  .section-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: var(--cyan-dim);
+    margin-bottom: 12px;
+  }
+
+  .section h2 {
+    font-family: 'Electrolize', sans-serif;
+    font-weight: 400;
+    font-size: 36px;
+    color: var(--white);
+    margin-bottom: 30px;
+    line-height: 1.2;
+  }
+  .section h2 .accent { color: var(--cyan); }
+
+  .section p {
+    margin-bottom: 20px;
+    font-size: 14px;
+  }
+
+  .section-divider {
+    max-width: 800px;
+    margin: 0 auto;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0,240,255,0.15), transparent);
+  }
+
+  /* ── pull quote ── */
+  .pull-quote {
+    border-left: 2px solid var(--cyan-dim);
+    padding: 16px 0 16px 24px;
+    margin: 30px 0;
+    font-family: 'Electrolize', sans-serif;
+    font-size: 18px;
+    color: var(--cyan-dim);
+    line-height: 1.6;
+    font-style: italic;
+  }
+
+  /* ── feature cards ── */
+  .features {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 30px;
+  }
+  .feature-card {
+    background: var(--dark-card);
+    border: 1px solid rgba(0,240,255,0.08);
+    padding: 28px;
+    transition: border-color 0.3s ease;
+  }
+  .feature-card:hover { border-color: rgba(0,240,255,0.25); }
+  .feature-card h3 {
+    font-family: 'Electrolize', sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+    color: var(--cyan);
+    margin-bottom: 10px;
+  }
+  .feature-card p {
+    font-size: 13px;
+    margin-bottom: 0;
+    line-height: 1.6;
+  }
+
+  /* ── tone list ── */
+  .tone-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 24px;
+  }
+  .tone-item {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--dark-card);
+    border: 1px solid rgba(0,240,255,0.06);
+    font-size: 13px;
+  }
+  .tone-item .franchise {
+    font-family: 'Electrolize', sans-serif;
+    color: var(--cyan);
+    white-space: nowrap;
+    min-width: 100px;
+  }
+  .tone-item .feel { color: var(--body-text); }
+
+  /* ── logistics list ── */
+  .logistics {
+    list-style: none;
+    margin-top: 20px;
+  }
+  .logistics li {
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(0,240,255,0.06);
+    font-size: 14px;
+    display: flex;
+    gap: 12px;
+  }
+  .logistics li:last-child { border-bottom: none; }
+  .logistics .label-key {
+    color: var(--cyan-dim);
+    min-width: 120px;
+    flex-shrink: 0;
+  }
+
+  /* ══════════════════════════════════════
+     CHARACTER FORM
+     ══════════════════════════════════════ */
+  .form-section {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 100px 40px 60px;
+  }
+
+  .form-section h2 {
+    font-family: 'Electrolize', sans-serif;
+    font-weight: 400;
+    font-size: 36px;
+    color: var(--white);
+    margin-bottom: 10px;
+  }
+  .form-section h2 .accent { color: var(--cyan); }
+
+  .form-intro {
+    font-size: 14px;
+    color: var(--body-text);
+    margin-bottom: 36px;
+    line-height: 1.7;
+  }
+
+  .concept-form { display: flex; flex-direction: column; gap: 24px; }
+
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--cyan-dim);
+  }
+  .form-group input,
+  .form-group textarea {
+    background: var(--dark-card);
+    border: 1px solid rgba(0,240,255,0.12);
+    color: var(--white);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    padding: 12px 16px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    outline: none;
+    width: 100%;
+  }
+  .form-group input:focus,
+  .form-group textarea:focus {
+    border-color: var(--cyan-dim);
+    box-shadow: 0 0 10px rgba(0,240,255,0.1);
+  }
+  .form-group textarea { resize: vertical; min-height: 80px; }
+  .form-group input::placeholder,
+  .form-group textarea::placeholder { color: #334455; }
+
+  .concept-block {
+    background: var(--dark-card);
+    border: 1px solid rgba(0,240,255,0.08);
+    padding: 28px;
+    margin-top: 8px;
+  }
+  .concept-block h3 {
+    font-family: 'Electrolize', sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+    color: var(--cyan);
+    margin-bottom: 20px;
+  }
+  .concept-block .form-group + .form-group { margin-top: 16px; }
+
+  /* ── verification ── */
+  .verify-group {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+  }
+  .verify-group .form-group { flex: 1; }
+  .verify-question {
+    font-family: 'Electrolize', sans-serif;
+    font-size: 16px;
+    color: var(--cyan);
+    padding-bottom: 6px;
+    white-space: nowrap;
+  }
+
+  /* ── honeypot ── */
+  .ohnohoney { position: absolute; left: -9999px; opacity: 0; height: 0; width: 0; }
+
+  /* ── submit ── */
+  .submit-btn {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--dark);
+    background: var(--cyan);
+    border: none;
+    padding: 16px 48px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    align-self: flex-start;
+    margin-top: 8px;
+  }
+  .submit-btn:hover {
+    background: #33f5ff;
+    box-shadow: 0 0 30px rgba(0,240,255,0.3);
+  }
+  .submit-btn:disabled {
+    background: var(--cyan-dim);
+    color: var(--dark-card);
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  .form-error {
+    color: var(--red);
+    font-size: 12px;
+    letter-spacing: 2px;
+    margin-top: 4px;
+    display: none;
+  }
+  .form-error.visible { display: block; }
+
+  .form-success {
+    background: rgba(0,255,136,0.06);
+    border: 1px solid rgba(0,255,136,0.2);
+    padding: 24px;
+    margin-top: 24px;
+    display: none;
+  }
+  .form-success.visible { display: block; }
+  .form-success p {
+    font-size: 14px;
+    color: var(--signal-green);
+    margin: 0;
+  }
+
+  /* ── footer ── */
+  .footer {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    padding: 40px;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: #223344;
+  }
+
+  /* ── mobile ── */
+  @media (max-width: 700px) {
+    .logo-container { padding: 60px 20px; }
+    .title-dead, .glitch-dead::before, .glitch-dead::after { font-size: 60px; letter-spacing: 18px; }
+    .title-signal, .glitch-signal::before, .glitch-signal::after { font-size: 40px; letter-spacing: 12px; }
+    .waveform-wrapper { width: 90vw; }
+    .hr-line { width: 90vw; }
+    .telemetry { display: none; }
+    .features, .tone-grid { grid-template-columns: 1fr; }
+    .section { padding: 60px 24px; }
+    .form-section { padding: 60px 24px 40px; }
+    .verify-group { flex-direction: column; gap: 8px; }
   }
 </style>
 </head>
@@ -542,99 +622,294 @@
 <div class="vignette"></div>
 <div class="scanlines"></div>
 
-<!-- main logo -->
-<div class="logo-container">
+<!-- ══════════════ HERO ══════════════ -->
+<section class="hero">
+  <div class="logo-container">
+    <div class="corner tl"></div>
+    <div class="corner tr"></div>
+    <div class="corner bl"></div>
+    <div class="corner br"></div>
 
-  <!-- corner brackets -->
-  <div class="corner tl"></div>
-  <div class="corner tr"></div>
-  <div class="corner bl"></div>
-  <div class="corner br"></div>
+    <div class="telemetry top-left">
+      SYS//MERIDIAN-STATION<br>
+      SECTOR <span class="val">K-9817</span><br>
+      STATUS: <span class="val blink">MONITORING</span>
+    </div>
+    <div class="telemetry top-right">
+      SIGNAL LOCK: <span class="val">CONFIRMED</span><br>
+      FREQ: <span class="val" id="freq">0.0000 Hz</span><br>
+      DECAY: <span class="val" id="decay">0.000%</span>
+    </div>
+    <div class="telemetry bottom-left">
+      ORIGIN: <span class="val">UNKNOWN</span><br>
+      AGE: <span class="val">&gt;2.4M YEARS</span><br>
+      CLASSIFICATION: <span class="val blink">LEVEL-7 BLACK</span>
+    </div>
+    <div class="telemetry bottom-right">
+      CREW: <span class="val">847</span> / ACTIVE: <span class="val" id="active">847</span><br>
+      THREAT: <span class="val" style="color: var(--red);">INTERNAL</span><br>
+      <span class="val" id="timestamp">00:00:00.000</span>
+    </div>
 
+    <div class="hr-line top"></div>
 
-  <!-- telemetry readouts -->
-  <div class="telemetry top-left">
-    SYS//MERIDIAN-STATION<br>
-    SECTOR <span class="val">K-9817</span><br>
-    STATUS: <span class="val blink">MONITORING</span>
-  </div>
-  <div class="telemetry top-right">
-    SIGNAL LOCK: <span class="val">CONFIRMED</span><br>
-    FREQ: <span class="val" id="freq">0.0000 Hz</span><br>
-    DECAY: <span class="val" id="decay">0.000%</span>
-  </div>
-  <div class="telemetry bottom-left">
-    ORIGIN: <span class="val">UNKNOWN</span><br>
-    AGE: <span class="val">&gt;2.4M YEARS</span><br>
-    CLASSIFICATION: <span class="val blink">LEVEL-7 BLACK</span>
-  </div>
-  <div class="telemetry bottom-right">
-    CREW: <span class="val">847</span> / ACTIVE: <span class="val" id="active">847</span><br>
-    THREAT: <span class="val" style="color: var(--red);">INTERNAL</span><br>
-    <span class="val" id="timestamp">00:00:00.000</span>
-  </div>
+    <div class="waveform-wrapper">
+      <svg class="waveform-svg" viewBox="0 0 600 100" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="waveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" style="stop-color:transparent"/>
+            <stop offset="15%" style="stop-color:#00f0ff"/>
+            <stop offset="50%" style="stop-color:#00f0ff"/>
+            <stop offset="85%" style="stop-color:#00f0ff"/>
+            <stop offset="100%" style="stop-color:transparent"/>
+          </linearGradient>
+        </defs>
+        <path class="wave-path-ghost" d="M0,50 L80,50 L100,50 L120,50 L140,50
+          L155,50 L165,15 L175,85 L185,25 L195,75 L205,10 L215,90 L225,20 L235,80
+          L245,35 L255,65 L270,45 L285,55 L300,50
+          L320,50 L340,50
+          L360,50 L370,42 L380,58 L390,38 L400,62 L410,30 L420,70 L430,35 L440,65 L450,50
+          L470,50 L490,50 L510,50 L530,50 L550,50 L570,50 L600,50"/>
+        <path class="wave-path" stroke="url(#waveGrad)" d="M0,50 L80,50 L100,50 L120,50 L140,50
+          L155,50 L165,15 L175,85 L185,25 L195,75 L205,10 L215,90 L225,20 L235,80
+          L245,35 L255,65 L270,45 L285,55 L300,50
+          L320,50 L340,50
+          L360,50 L370,42 L380,58 L390,38 L400,62 L410,30 L420,70 L430,35 L440,65 L450,50
+          L470,50 L490,50 L510,50 L530,50 L550,50 L570,50 L600,50"/>
+      </svg>
+      <div class="scan-beam"></div>
+    </div>
 
-  <!-- top decorative line -->
-  <div class="hr-line top"></div>
+    <div class="glitch-wrapper glitch-dead" data-text="DEAD" style="position:relative;">
+      <div class="title-dead">DEAD</div>
+      <div class="flatline"></div>
+    </div>
 
-  <!-- waveform above the title -->
-  <div class="waveform-wrapper">
-    <svg class="waveform-svg" viewBox="0 0 600 100" preserveAspectRatio="none">
-      <defs>
-        <linearGradient id="waveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" style="stop-color:transparent"/>
-          <stop offset="15%" style="stop-color:#00f0ff"/>
-          <stop offset="50%" style="stop-color:#00f0ff"/>
-          <stop offset="85%" style="stop-color:#00f0ff"/>
-          <stop offset="100%" style="stop-color:transparent"/>
-        </linearGradient>
-      </defs>
-      <!-- ghost/echo wave (red, offset) -->
-      <path class="wave-path-ghost" d="M0,50 L80,50 L100,50 L120,50 L140,50
-        L155,50 L165,15 L175,85 L185,25 L195,75 L205,10 L215,90 L225,20 L235,80
-        L245,35 L255,65 L270,45 L285,55 L300,50
-        L320,50 L340,50
-        L360,50 L370,42 L380,58 L390,38 L400,62 L410,30 L420,70 L430,35 L440,65 L450,50
-        L470,50 L490,50 L510,50 L530,50 L550,50 L570,50 L600,50"/>
-      <!-- main signal wave -->
-      <path class="wave-path" stroke="url(#waveGrad)" d="M0,50 L80,50 L100,50 L120,50 L140,50
-        L155,50 L165,15 L175,85 L185,25 L195,75 L205,10 L215,90 L225,20 L235,80
-        L245,35 L255,65 L270,45 L285,55 L300,50
-        L320,50 L340,50
-        L360,50 L370,42 L380,58 L390,38 L400,62 L410,30 L420,70 L430,35 L440,65 L450,50
-        L470,50 L490,50 L510,50 L530,50 L550,50 L570,50 L600,50"/>
-    </svg>
-    <div class="scan-beam"></div>
-  </div>
+    <div class="glitch-wrapper glitch-signal" data-text="SIGNAL" style="margin-top: -4px;">
+      <div class="title-signal">SIGNAL</div>
+    </div>
 
-  <!-- DEAD -->
-  <div class="glitch-wrapper glitch-dead" data-text="DEAD" style="position:relative;">
-    <div class="title-dead">DEAD</div>
-    <div class="flatline"></div>
-  </div>
-
-  <!-- SIGNAL -->
-  <div class="glitch-wrapper glitch-signal" data-text="SIGNAL" style="margin-top: -4px;">
-    <div class="title-signal">SIGNAL</div>
-  </div>
-
-  <!-- bottom decorative line -->
-  <div class="hr-line bottom"></div>
-
-  <!-- signal strength bars -->
-  <div class="signal-bars" id="signalBars"></div>
-
-  <!-- subtitle -->
-  <div class="subtitle">Meridian Station</div>
-
-  <!-- status warning -->
-  <div class="status-line">
-    SIGNAL ANOMALY DETECTED — SOURCE UNRESOLVED<span class="cursor"></span>
+    <div class="hr-line bottom"></div>
+    <div class="signal-bars" id="signalBars"></div>
+    <div class="subtitle">Meridian Station</div>
+    <div class="status-line">
+      SIGNAL ANOMALY DETECTED — SOURCE UNRESOLVED<span class="cursor"></span>
+    </div>
   </div>
 
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <div class="arrow"></div>
+  </div>
+</section>
+
+<!-- ══════════════ CONTENT ══════════════ -->
+<div class="page-content">
+
+  <!-- THE PITCH -->
+  <div class="section-divider"></div>
+  <section class="section">
+    <div class="section-label">// Incoming Transmission</div>
+    <h2>A Murder Mystery Campaign<br>at the <span class="accent">Edge of Space</span></h2>
+    <p>Dead Signal is a multi-session murder mystery party set aboard a deep-space station. 14 to 20 players take on the roles of officers, scientists, smugglers, spies, and true believers — all trapped together at the frontier of known space, orbiting a signal that no one can explain.</p>
+    <p>Someone on Meridian Station is a killer. But the murder is only one of a dozen interwoven plots. There are conspiracies to unravel, alliances to forge, secrets to trade, and a mystery older than human civilization pulsing through the walls.</p>
+
+    <div class="pull-quote">
+      Every session, someone dies. Every session, the genre shifts. One night it's a diplomatic crisis. The next, something is loose in the ventilation system. The cast and setting stay the same — but the story never stops evolving.
+    </div>
+
+    <p>This isn't a one-night murder mystery party. It's an open-ended campaign that runs monthly, building on player choices session after session. Your character survives, grows, makes enemies, uncovers secrets, and becomes entangled in a conspiracy that gets deeper every time you play.</p>
+  </section>
+
+  <!-- WHAT TO EXPECT -->
+  <div class="section-divider"></div>
+  <section class="section">
+    <div class="section-label">// Station Briefing</div>
+    <h2>What to <span class="accent">Expect</span></h2>
+
+    <div class="features">
+      <div class="feature-card">
+        <h3>Freeform Gameplay</h3>
+        <p>No scripts. No predetermined outcomes. You choose who to trust, who to betray, and how to pursue your goals. Every session plays out differently based on what 14-20 players actually do.</p>
+      </div>
+      <div class="feature-card">
+        <h3>Evolving Characters</h3>
+        <p>You keep your character across sessions. Your sheet updates based on what you actually did — new secrets, shifted alliances, enemies made, debts owed. Your story is yours.</p>
+      </div>
+      <div class="feature-card">
+        <h3>Genre-Shifting Sessions</h3>
+        <p>Each session channels a different sci-fi vibe. A paranoid thriller one month, a first-contact dilemma the next, a survival horror the one after that. Same station, same cast, completely different energy.</p>
+      </div>
+      <div class="feature-card">
+        <h3>Bridge Simulator Nights</h3>
+        <p>Every few sessions, a crew takes the helm of a ship using Artemis / Empty Epsilon while the rest play a concurrent station-side mystery. Ship outcomes create in-character consequences and suspicion.</p>
+      </div>
+      <div class="feature-card">
+        <h3>Costumes Encouraged</h3>
+        <p>This is a party. Dress the part — military officer, shady smuggler, station scientist, whatever fits your character. The setting is flexible enough that almost anything sci-fi works.</p>
+      </div>
+      <div class="feature-card">
+        <h3>No Experience Needed</h3>
+        <p>Never done a murder mystery? Perfect. Your character sheet tells you everything — your goals, your secrets, your relationships. All you need to do is show up and be someone else for an evening.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TONE GUIDE -->
+  <div class="section-divider"></div>
+  <section class="section">
+    <div class="section-label">// Signal Spectrum</div>
+    <h2>The <span class="accent">Franchise Vibes</span></h2>
+    <p>Each session channels the emotional texture of a different sci-fi universe. Not fan fiction — just the feeling. You won't see a lightsaber, but you might feel the weight of a prophecy.</p>
+
+    <div class="tone-grid">
+      <div class="tone-item"><span class="franchise">Star Trek</span><span class="feel">Diplomacy, ethics, first contact</span></div>
+      <div class="tone-item"><span class="franchise">Alien</span><span class="feel">Survival horror, corporate cover-up</span></div>
+      <div class="tone-item"><span class="franchise">BSG</span><span class="feel">Paranoia, infiltrators, trust no one</span></div>
+      <div class="tone-item"><span class="franchise">Star Wars</span><span class="feel">Ancient power, rebellion, destiny</span></div>
+      <div class="tone-item"><span class="franchise">Dune</span><span class="feel">Resource politics, prophecy, feudal power</span></div>
+      <div class="tone-item"><span class="franchise">Blade Runner</span><span class="feel">Identity crisis, noir investigation</span></div>
+      <div class="tone-item"><span class="franchise">Firefly</span><span class="feel">Heist gone wrong, loyalty tested</span></div>
+      <div class="tone-item"><span class="franchise">The Matrix</span><span class="feel">Reality questioned, hidden layers</span></div>
+      <div class="tone-item"><span class="franchise">The Culture</span><span class="feel">Vastly superior civilization arrives</span></div>
+      <div class="tone-item"><span class="franchise">Hyperion</span><span class="feel">Time anomalies, sacrifice, pilgrimage</span></div>
+    </div>
+  </section>
+
+  <!-- LOGISTICS -->
+  <div class="section-divider"></div>
+  <section class="section">
+    <div class="section-label">// Mission Parameters</div>
+    <h2>The <span class="accent">Details</span></h2>
+
+    <ul class="logistics">
+      <li><span class="label-key">Players</span>14 to 20 per session</li>
+      <li><span class="label-key">Cadence</span>Monthly sessions, 3-4 hours each</li>
+      <li><span class="label-key">Duration</span>Open-ended — seasonal arcs of 4-6 sessions, campaign runs as long as we want</li>
+      <li><span class="label-key">Commitment</span>Drop in or out between sessions — characters are written in and out with narrative justification</li>
+      <li><span class="label-key">Format</span>In-person, freeform — no scripts, no turns, just a room full of people scheming</li>
+      <li><span class="label-key">Host</span>One dedicated host (non-playing) runs the session, manages plots, and referees</li>
+      <li><span class="label-key">Bridge Sim</span>Every 2nd or 3rd session includes Artemis / Empty Epsilon for 5-6 players</li>
+    </ul>
+  </section>
+
+  <!-- CHARACTER FORM -->
+  <div class="section-divider"></div>
+  <section class="form-section" id="signup">
+    <div class="section-label">// Crew Manifest — Submit Your Concepts</div>
+    <h2>Character <span class="accent">Concept Form</span></h2>
+    <p class="form-intro">
+      Submit at least one character concept (up to three, ranked by preference). For each concept, tell us the character's name, an optional inspiration, what you'd wear as a costume, and how they behave. Multiple concepts give the host flexibility to balance the cast and weave relationships together.
+    </p>
+
+    <form class="concept-form" id="conceptForm" action="https://formsubmit.co/bryanlivingston@gmail.com" method="POST">
+      <!-- FormSubmit config -->
+      <input type="hidden" name="_subject" value="Dead Signal — New Character Concept Submission">
+      <input type="hidden" name="_template" value="table">
+      <input type="hidden" name="_captcha" value="false">
+      <input type="hidden" name="_next" value="">
+
+      <!-- Honeypot -->
+      <input type="text" name="_honey" class="ohnohoney" tabindex="-1" autocomplete="off">
+
+      <!-- Player info -->
+      <div class="form-group">
+        <label for="playerName">Your Name</label>
+        <input type="text" id="playerName" name="Player Name" required placeholder="Your real name">
+      </div>
+      <div class="form-group">
+        <label for="playerEmail">Email</label>
+        <input type="email" id="playerEmail" name="Email" required placeholder="your@email.com">
+      </div>
+
+      <!-- Concept 1 -->
+      <div class="concept-block">
+        <h3>Character Concept #1 — First Choice</h3>
+        <div class="form-group">
+          <label for="c1name">Character Name</label>
+          <input type="text" id="c1name" name="Concept 1 - Name" required placeholder="e.g. Commander Ryn Hale">
+        </div>
+        <div class="form-group">
+          <label for="c1inspo">Inspiration (optional)</label>
+          <input type="text" id="c1inspo" name="Concept 1 - Inspiration" placeholder="e.g. Ripley meets Han Solo, a Starbuck type">
+        </div>
+        <div class="form-group">
+          <label for="c1costume">Costume Idea</label>
+          <input type="text" id="c1costume" name="Concept 1 - Costume" required placeholder="e.g. Military jacket with rolled sleeves, dog tags, combat boots">
+        </div>
+        <div class="form-group">
+          <label for="c1personality">Personality</label>
+          <textarea id="c1personality" name="Concept 1 - Personality" required placeholder="How do they behave? Temperament, mannerisms, social style. e.g. Calm under fire but reckless off-duty. Trusts actions over words. Covers fear with dark humor."></textarea>
+        </div>
+      </div>
+
+      <!-- Concept 2 -->
+      <div class="concept-block">
+        <h3>Character Concept #2 — Second Choice (optional)</h3>
+        <div class="form-group">
+          <label for="c2name">Character Name</label>
+          <input type="text" id="c2name" name="Concept 2 - Name" placeholder="e.g. Dr. Sable Orin">
+        </div>
+        <div class="form-group">
+          <label for="c2inspo">Inspiration (optional)</label>
+          <input type="text" id="c2inspo" name="Concept 2 - Inspiration" placeholder="e.g. A Dana Scully who's starting to believe">
+        </div>
+        <div class="form-group">
+          <label for="c2costume">Costume Idea</label>
+          <input type="text" id="c2costume" name="Concept 2 - Costume" placeholder="e.g. Lab coat over dark turtleneck, glasses, data tablet prop">
+        </div>
+        <div class="form-group">
+          <label for="c2personality">Personality</label>
+          <textarea id="c2personality" name="Concept 2 - Personality" placeholder="e.g. Methodical and skeptical but privately fascinated by the signal. Speaks precisely. Keeps a journal."></textarea>
+        </div>
+      </div>
+
+      <!-- Concept 3 -->
+      <div class="concept-block">
+        <h3>Character Concept #3 — Third Choice (optional)</h3>
+        <div class="form-group">
+          <label for="c3name">Character Name</label>
+          <input type="text" id="c3name" name="Concept 3 - Name" placeholder="e.g. Kael 'Patch' Duran">
+        </div>
+        <div class="form-group">
+          <label for="c3inspo">Inspiration (optional)</label>
+          <input type="text" id="c3inspo" name="Concept 3 - Inspiration" placeholder="e.g. Kaylee from Firefly meets a street-smart survivor">
+        </div>
+        <div class="form-group">
+          <label for="c3costume">Costume Idea</label>
+          <input type="text" id="c3costume" name="Concept 3 - Costume" placeholder="e.g. Worn cargo pants, tool belt, grease stains, patched jacket">
+        </div>
+        <div class="form-group">
+          <label for="c3personality">Personality</label>
+          <textarea id="c3personality" name="Concept 3 - Personality" placeholder="e.g. Cheerful and resourceful on the surface. Trusts machines more than people. Has a past they don't talk about."></textarea>
+        </div>
+      </div>
+
+      <!-- Verification -->
+      <div class="verify-group">
+        <div class="form-group">
+          <label>Verification — Prove you're crew</label>
+          <div class="verify-question" id="verifyQuestion"></div>
+          <input type="text" id="verifyAnswer" placeholder="Your answer" autocomplete="off" inputmode="numeric">
+          <div class="form-error" id="verifyError">Incorrect answer. Try again.</div>
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn" id="submitBtn">Transmit Concepts</button>
+
+      <div class="form-success" id="formSuccess">
+        <p>Transmission received. Your character concepts have been logged. Stand by for crew assignment.</p>
+      </div>
+    </form>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    The signal is patient. It will still be here when you arrive.
+  </footer>
 </div>
 
-<!-- audio toggle button -->
+<!-- audio toggle -->
 <button class="audio-toggle" id="audioToggle">Enable Audio</button>
 
 <script>
@@ -650,7 +925,6 @@
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
 
-  // three layers: far (slow, dim, small), mid, near (fast, bright, big)
   const layers = [
     { count: 160, speed: 0.12, sizeMin: 0.5, sizeMax: 1.2, opacityMin: 0.15, opacityMax: 0.4 },
     { count: 80,  speed: 0.3,  sizeMin: 1.0, sizeMax: 2.0, opacityMin: 0.3,  opacityMax: 0.7 },
@@ -661,7 +935,7 @@
   for (const layer of layers) {
     for (let i = 0; i < layer.count; i++) {
       stars.push({
-        x: Math.random() * 3000,  // use a wide field, wider than screen
+        x: Math.random() * 3000,
         y: Math.random() * 2000,
         r: layer.sizeMin + Math.random() * (layer.sizeMax - layer.sizeMin),
         baseOpacity: layer.opacityMin + Math.random() * (layer.opacityMax - layer.opacityMin),
@@ -676,32 +950,23 @@
   function drawStars() {
     ctx.clearRect(0, 0, cw, ch);
     time += 0.016;
-
     for (const s of stars) {
-      // drift leftward, wrap around
       s.x -= s.speed;
       if (s.x < -5) s.x += cw + 10;
-
-      // twinkle
       const twinkle = 0.6 + 0.4 * Math.sin(time * s.twinkleSpeed + s.twinkleOffset);
       const alpha = s.baseOpacity * twinkle;
-
-      // blue tint near center, white at edges
       const sx = s.x, sy = s.y % ch;
       const dx = sx - cw * 0.5, dy = sy - ch * 0.5;
       const dist = Math.sqrt(dx * dx + dy * dy);
       const maxDist = Math.sqrt(cw * cw + ch * ch) * 0.5;
-      const t = Math.min(dist / maxDist, 1);  // 0 = center, 1 = edge
-      // center: cyan-tinted (160,220,255), edge: cool white (220,230,255)
+      const t = Math.min(dist / maxDist, 1);
       const r = Math.round(160 + t * 60);
       const g = Math.round(220 + t * 10);
-
       ctx.beginPath();
       ctx.arc(sx, sy, s.r, 0, Math.PI * 2);
       ctx.fillStyle = `rgba(${r}, ${g}, 255, ${alpha})`;
       ctx.fill();
     }
-
     requestAnimationFrame(drawStars);
   }
   drawStars();
@@ -725,14 +990,13 @@
   for (let i = 0; i < 40; i++) {
     const bar = document.createElement('div');
     bar.className = 'bar';
-    const h = 3 + Math.random() * 18;
-    bar.style.height = h + 'px';
+    bar.style.height = (3 + Math.random() * 18) + 'px';
     bar.style.setProperty('--bar-delay', (Math.random() * 2) + 's');
     barsContainer.appendChild(bar);
   }
 
-  // ── animate telemetry numbers ──
-  function animateTelemetry() {
+  // ── animate telemetry ──
+  (function animateTelemetry() {
     const freq = document.getElementById('freq');
     const decay = document.getElementById('decay');
     const active = document.getElementById('active');
@@ -742,21 +1006,16 @@
       t += 0.05;
       freq.textContent = (47.3 + Math.sin(t * 0.7) * 0.08).toFixed(4) + ' Hz';
       decay.textContent = (0.042 + Math.sin(t * 0.3) * 0.003).toFixed(3) + '%';
-      const crew = 847 - Math.floor(Math.random() < 0.01 ? 1 : 0);
-      active.textContent = crew;
+      active.textContent = 847 - Math.floor(Math.random() < 0.01 ? 1 : 0);
       const now = new Date();
-      ts.textContent = now.toTimeString().split(' ')[0] + '.' +
-        String(now.getMilliseconds()).padStart(3, '0');
+      ts.textContent = now.toTimeString().split(' ')[0] + '.' + String(now.getMilliseconds()).padStart(3, '0');
     }, 50);
-  }
-  animateTelemetry();
+  })();
 
-  // ══════════════════════════════════════════
-  //  AUDIO ENGINE — Web Audio API (procedural)
-  // ══════════════════════════════════════════
-  let audioCtx = null;
-  let audioRunning = false;
-  let masterGain = null;
+  // ══════════════════════════════════════
+  //  AUDIO ENGINE
+  // ══════════════════════════════════════
+  let audioCtx = null, audioRunning = false, masterGain = null;
   const audioNodes = [];
 
   function initAudio() {
@@ -764,255 +1023,87 @@
     masterGain = audioCtx.createGain();
     masterGain.gain.value = 0;
     masterGain.connect(audioCtx.destination);
-
-    // fade master in over 3 seconds
     masterGain.gain.linearRampToValueAtTime(0.8, audioCtx.currentTime + 3);
-
-    startDeepDrone();
-    startSignalBeacon();
-    startSubHum();
-    startStaticCrackle();
-    startGlitchBursts();
+    startDeepDrone(); startSignalBeacon(); startSubHum(); startStaticCrackle(); startGlitchBursts();
   }
 
-  // ── 1. Deep space drone — layered low oscillators with slow modulation ──
   function startDeepDrone() {
-    const droneGain = audioCtx.createGain();
-    droneGain.gain.value = 0.12;
-    droneGain.connect(masterGain);
-    audioNodes.push(droneGain);
-
-    // base fundamental
-    const osc1 = audioCtx.createOscillator();
-    osc1.type = 'sine';
-    osc1.frequency.value = 38;
-    osc1.connect(droneGain);
-    osc1.start();
-    audioNodes.push(osc1);
-
-    // detuned second voice
-    const osc2 = audioCtx.createOscillator();
-    osc2.type = 'sine';
-    osc2.frequency.value = 38.7; // slow beat frequency with osc1
-    osc2.connect(droneGain);
-    osc2.start();
-    audioNodes.push(osc2);
-
-    // dark sawtooth layer an octave below
-    const oscSaw = audioCtx.createOscillator();
-    oscSaw.type = 'sawtooth';
-    oscSaw.frequency.value = 19;
-    const sawFilter = audioCtx.createBiquadFilter();
-    sawFilter.type = 'lowpass';
-    sawFilter.frequency.value = 60;
-    sawFilter.Q.value = 2;
-    const sawGain = audioCtx.createGain();
-    sawGain.gain.value = 0.06;
-    oscSaw.connect(sawFilter);
-    sawFilter.connect(sawGain);
-    sawGain.connect(masterGain);
-    oscSaw.start();
-    audioNodes.push(oscSaw, sawFilter, sawGain);
-
-    // slow LFO modulating drone volume for breathing effect
-    const lfo = audioCtx.createOscillator();
-    lfo.type = 'sine';
-    lfo.frequency.value = 0.08; // very slow
-    const lfoGain = audioCtx.createGain();
-    lfoGain.gain.value = 0.04;
-    lfo.connect(lfoGain);
-    lfoGain.connect(droneGain.gain);
-    lfo.start();
-    audioNodes.push(lfo, lfoGain);
+    const g = audioCtx.createGain(); g.gain.value = 0.12; g.connect(masterGain); audioNodes.push(g);
+    const o1 = audioCtx.createOscillator(); o1.type = 'sine'; o1.frequency.value = 38; o1.connect(g); o1.start(); audioNodes.push(o1);
+    const o2 = audioCtx.createOscillator(); o2.type = 'sine'; o2.frequency.value = 38.7; o2.connect(g); o2.start(); audioNodes.push(o2);
+    const oS = audioCtx.createOscillator(); oS.type = 'sawtooth'; oS.frequency.value = 19;
+    const sf = audioCtx.createBiquadFilter(); sf.type = 'lowpass'; sf.frequency.value = 60; sf.Q.value = 2;
+    const sg = audioCtx.createGain(); sg.gain.value = 0.06;
+    oS.connect(sf); sf.connect(sg); sg.connect(masterGain); oS.start(); audioNodes.push(oS, sf, sg);
+    const lfo = audioCtx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 0.08;
+    const lg = audioCtx.createGain(); lg.gain.value = 0.04;
+    lfo.connect(lg); lg.connect(g.gain); lfo.start(); audioNodes.push(lfo, lg);
   }
 
-  // ── 2. Signal beacon — periodic ping with reverb tail ──
   function startSignalBeacon() {
     function ping() {
       if (!audioRunning) return;
-
-      const pingGain = audioCtx.createGain();
-      pingGain.gain.value = 0;
-      pingGain.connect(masterGain);
-
-      // main ping tone
-      const osc = audioCtx.createOscillator();
-      osc.type = 'sine';
-      osc.frequency.value = 1174.7; // D6
-      osc.connect(pingGain);
-
-      // ghost harmonic
-      const osc2 = audioCtx.createOscillator();
-      osc2.type = 'sine';
-      osc2.frequency.value = 1760; // A6
-      const ghostGain = audioCtx.createGain();
-      ghostGain.gain.value = 0.3;
-      osc2.connect(ghostGain);
-      ghostGain.connect(pingGain);
-
-      const now = audioCtx.currentTime;
-      // sharp attack, long decay
-      pingGain.gain.setValueAtTime(0, now);
-      pingGain.gain.linearRampToValueAtTime(0.08, now + 0.008);
-      pingGain.gain.exponentialRampToValueAtTime(0.001, now + 2.5);
-
-      // pitch drops slightly during decay
-      osc.frequency.setValueAtTime(1174.7, now);
-      osc.frequency.exponentialRampToValueAtTime(1140, now + 2.5);
-
-      osc.start(now);
-      osc.stop(now + 2.8);
-      osc2.start(now);
-      osc2.stop(now + 2.8);
-
-      // schedule next ping with slight timing jitter
-      const nextDelay = 4.0 + (Math.random() - 0.5) * 0.6;
-      setTimeout(ping, nextDelay * 1000);
+      const g = audioCtx.createGain(); g.gain.value = 0; g.connect(masterGain);
+      const o = audioCtx.createOscillator(); o.type = 'sine'; o.frequency.value = 1174.7; o.connect(g);
+      const o2 = audioCtx.createOscillator(); o2.type = 'sine'; o2.frequency.value = 1760;
+      const gg = audioCtx.createGain(); gg.gain.value = 0.3; o2.connect(gg); gg.connect(g);
+      const n = audioCtx.currentTime;
+      g.gain.setValueAtTime(0, n); g.gain.linearRampToValueAtTime(0.08, n + 0.008); g.gain.exponentialRampToValueAtTime(0.001, n + 2.5);
+      o.frequency.setValueAtTime(1174.7, n); o.frequency.exponentialRampToValueAtTime(1140, n + 2.5);
+      o.start(n); o.stop(n + 2.8); o2.start(n); o2.stop(n + 2.8);
+      setTimeout(ping, (4 + (Math.random() - 0.5) * 0.6) * 1000);
     }
-    // first ping after 1.5s
     setTimeout(ping, 1500);
   }
 
-  // ── 3. Sub-bass hum — station reactor rumble ──
   function startSubHum() {
-    const humGain = audioCtx.createGain();
-    humGain.gain.value = 0.08;
-    humGain.connect(masterGain);
-
-    const osc = audioCtx.createOscillator();
-    osc.type = 'triangle';
-    osc.frequency.value = 55; // low A
-
-    // slight vibrato
-    const vibrato = audioCtx.createOscillator();
-    vibrato.type = 'sine';
-    vibrato.frequency.value = 0.25;
-    const vibGain = audioCtx.createGain();
-    vibGain.gain.value = 1.5;
-    vibrato.connect(vibGain);
-    vibGain.connect(osc.frequency);
-
-    osc.connect(humGain);
-    osc.start();
-    vibrato.start();
-    audioNodes.push(osc, humGain, vibrato, vibGain);
+    const g = audioCtx.createGain(); g.gain.value = 0.08; g.connect(masterGain);
+    const o = audioCtx.createOscillator(); o.type = 'triangle'; o.frequency.value = 55;
+    const v = audioCtx.createOscillator(); v.type = 'sine'; v.frequency.value = 0.25;
+    const vg = audioCtx.createGain(); vg.gain.value = 1.5; v.connect(vg); vg.connect(o.frequency);
+    o.connect(g); o.start(); v.start(); audioNodes.push(o, g, v, vg);
   }
 
-  // ── 4. Static crackle — filtered noise bursts ──
   function startStaticCrackle() {
-    // create a noise buffer
-    const bufferSize = audioCtx.sampleRate * 2;
-    const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-    const data = noiseBuffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-      data[i] = (Math.random() * 2 - 1);
-    }
-
+    const buf = audioCtx.createBuffer(1, audioCtx.sampleRate * 2, audioCtx.sampleRate);
+    const d = buf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
     function crackle() {
       if (!audioRunning) return;
-
-      const source = audioCtx.createBufferSource();
-      source.buffer = noiseBuffer;
-
-      const filter = audioCtx.createBiquadFilter();
-      filter.type = 'bandpass';
-      filter.frequency.value = 3000 + Math.random() * 5000;
-      filter.Q.value = 0.5 + Math.random() * 2;
-
-      const env = audioCtx.createGain();
-      env.gain.value = 0;
-
-      source.connect(filter);
-      filter.connect(env);
-      env.connect(masterGain);
-
-      const now = audioCtx.currentTime;
-      const duration = 0.02 + Math.random() * 0.08;
-      const volume = 0.01 + Math.random() * 0.025;
-
-      env.gain.setValueAtTime(0, now);
-      env.gain.linearRampToValueAtTime(volume, now + 0.003);
-      env.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-
-      source.start(now);
-      source.stop(now + duration + 0.01);
-
-      // random gap between crackles
-      const next = 100 + Math.random() * 600;
-      setTimeout(crackle, next);
+      const s = audioCtx.createBufferSource(); s.buffer = buf;
+      const f = audioCtx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 3000 + Math.random() * 5000; f.Q.value = 0.5 + Math.random() * 2;
+      const e = audioCtx.createGain(); e.gain.value = 0; s.connect(f); f.connect(e); e.connect(masterGain);
+      const n = audioCtx.currentTime, dur = 0.02 + Math.random() * 0.08, vol = 0.01 + Math.random() * 0.025;
+      e.gain.setValueAtTime(0, n); e.gain.linearRampToValueAtTime(vol, n + 0.003); e.gain.exponentialRampToValueAtTime(0.0001, n + dur);
+      s.start(n); s.stop(n + dur + 0.01);
+      setTimeout(crackle, 100 + Math.random() * 600);
     }
     setTimeout(crackle, 2000);
   }
 
-  // ── 5. Glitch bursts — synced to CSS glitch timing (~every 5-6s) ──
   function startGlitchBursts() {
-    const bufferSize = audioCtx.sampleRate;
-    const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-    const data = noiseBuffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-      data[i] = (Math.random() * 2 - 1);
-    }
-
+    const buf = audioCtx.createBuffer(1, audioCtx.sampleRate, audioCtx.sampleRate);
+    const d = buf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
     function burst() {
       if (!audioRunning) return;
-
-      // noise burst
-      const source = audioCtx.createBufferSource();
-      source.buffer = noiseBuffer;
-
-      const filter = audioCtx.createBiquadFilter();
-      filter.type = 'highpass';
-      filter.frequency.value = 1500;
-
-      const env = audioCtx.createGain();
-      env.gain.value = 0;
-
-      source.connect(filter);
-      filter.connect(env);
-      env.connect(masterGain);
-
-      const now = audioCtx.currentTime;
-      // sharp staccato burst
-      env.gain.setValueAtTime(0, now);
-      env.gain.linearRampToValueAtTime(0.06, now + 0.005);
-      env.gain.setValueAtTime(0.06, now + 0.04);
-      env.gain.linearRampToValueAtTime(0, now + 0.06);
-      // second stutter hit
-      env.gain.linearRampToValueAtTime(0.04, now + 0.09);
-      env.gain.linearRampToValueAtTime(0, now + 0.14);
-
-      source.start(now);
-      source.stop(now + 0.2);
-
-      // distorted tone underneath
-      const glitchOsc = audioCtx.createOscillator();
-      glitchOsc.type = 'square';
-      glitchOsc.frequency.value = 80 + Math.random() * 200;
-      const glitchGain = audioCtx.createGain();
-      glitchGain.gain.value = 0;
-      const distFilter = audioCtx.createBiquadFilter();
-      distFilter.type = 'lowpass';
-      distFilter.frequency.value = 400;
-
-      glitchOsc.connect(distFilter);
-      distFilter.connect(glitchGain);
-      glitchGain.connect(masterGain);
-
-      glitchGain.gain.setValueAtTime(0, now);
-      glitchGain.gain.linearRampToValueAtTime(0.04, now + 0.01);
-      glitchGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
-
-      glitchOsc.start(now);
-      glitchOsc.stop(now + 0.2);
-
-      // roughly match the CSS glitch cycle (5-6s) with jitter
-      const next = 5000 + Math.random() * 2000;
-      setTimeout(burst, next);
+      const s = audioCtx.createBufferSource(); s.buffer = buf;
+      const f = audioCtx.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 1500;
+      const e = audioCtx.createGain(); e.gain.value = 0; s.connect(f); f.connect(e); e.connect(masterGain);
+      const n = audioCtx.currentTime;
+      e.gain.setValueAtTime(0, n); e.gain.linearRampToValueAtTime(0.06, n + 0.005);
+      e.gain.setValueAtTime(0.06, n + 0.04); e.gain.linearRampToValueAtTime(0, n + 0.06);
+      e.gain.linearRampToValueAtTime(0.04, n + 0.09); e.gain.linearRampToValueAtTime(0, n + 0.14);
+      s.start(n); s.stop(n + 0.2);
+      const go = audioCtx.createOscillator(); go.type = 'square'; go.frequency.value = 80 + Math.random() * 200;
+      const gg = audioCtx.createGain(); gg.gain.value = 0;
+      const df = audioCtx.createBiquadFilter(); df.type = 'lowpass'; df.frequency.value = 400;
+      go.connect(df); df.connect(gg); gg.connect(masterGain);
+      gg.gain.setValueAtTime(0, n); gg.gain.linearRampToValueAtTime(0.04, n + 0.01); gg.gain.exponentialRampToValueAtTime(0.0001, n + 0.15);
+      go.start(n); go.stop(n + 0.2);
+      setTimeout(burst, 5000 + Math.random() * 2000);
     }
     setTimeout(burst, 4500);
   }
 
-  // ── audio toggle ──
   const toggleBtn = document.getElementById('audioToggle');
   toggleBtn.addEventListener('click', () => {
     if (!audioRunning) {
@@ -1021,16 +1112,78 @@
       audioRunning = true;
       masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
       masterGain.gain.linearRampToValueAtTime(0.8, audioCtx.currentTime + 2);
-      toggleBtn.textContent = 'Mute Audio';
-      toggleBtn.classList.add('active');
+      toggleBtn.textContent = 'Mute Audio'; toggleBtn.classList.add('active');
     } else {
       audioRunning = false;
       masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
       masterGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 1.5);
-      toggleBtn.textContent = 'Enable Audio';
-      toggleBtn.classList.remove('active');
+      toggleBtn.textContent = 'Enable Audio'; toggleBtn.classList.remove('active');
     }
   });
+
+  // ══════════════════════════════════════
+  //  VERIFICATION & FORM
+  // ══════════════════════════════════════
+
+  // Generate a simple math challenge
+  let verifyA, verifyB, verifyOp, verifyCorrect;
+  function generateChallenge() {
+    verifyA = Math.floor(Math.random() * 20) + 3;
+    verifyB = Math.floor(Math.random() * 15) + 2;
+    // Randomly pick addition or multiplication (small numbers for mult)
+    if (Math.random() > 0.5) {
+      verifyOp = '+';
+      verifyCorrect = verifyA + verifyB;
+    } else {
+      verifyA = Math.floor(Math.random() * 12) + 2;
+      verifyB = Math.floor(Math.random() * 9) + 2;
+      verifyOp = '\u00d7';
+      verifyCorrect = verifyA * verifyB;
+    }
+    document.getElementById('verifyQuestion').textContent = `${verifyA} ${verifyOp} ${verifyB} = ?`;
+  }
+  generateChallenge();
+
+  // Set the _next redirect to current page with success hash
+  document.querySelector('input[name="_next"]').value = location.href.split('#')[0] + '#submitted';
+
+  const form = document.getElementById('conceptForm');
+  const verifyInput = document.getElementById('verifyAnswer');
+  const verifyError = document.getElementById('verifyError');
+  const successMsg = document.getElementById('formSuccess');
+
+  form.addEventListener('submit', function(e) {
+    const answer = parseInt(verifyInput.value, 10);
+    if (answer !== verifyCorrect) {
+      e.preventDefault();
+      verifyError.classList.add('visible');
+      verifyInput.value = '';
+      generateChallenge();
+      verifyInput.focus();
+      return;
+    }
+    verifyError.classList.remove('visible');
+    // Form submits normally to FormSubmit.co
+  });
+
+  // Show success message if redirected back
+  if (location.hash === '#submitted') {
+    form.style.display = 'none';
+    successMsg.classList.add('visible');
+    // Clean hash
+    history.replaceState(null, '', location.href.split('#')[0]);
+  }
+
+  // Hide scroll hint once user scrolls
+  const scrollHint = document.querySelector('.scroll-hint');
+  let hintHidden = false;
+  window.addEventListener('scroll', () => {
+    if (!hintHidden && window.scrollY > 100) {
+      scrollHint.style.transition = 'opacity 0.5s ease';
+      scrollHint.style.opacity = '0';
+      hintHidden = true;
+    }
+  }, { passive: true });
 </script>
 </body>
 </html>
