@@ -597,6 +597,20 @@
     color: #223344;
   }
 
+  /* ── closing quote block ── */
+  .closing-quote {
+    background: var(--dark-card);
+    border: 1px solid rgba(0,240,255,0.12);
+    padding: 40px 44px;
+    font-family: 'Electrolize', sans-serif;
+    font-size: 18px;
+    color: var(--cyan-dim);
+    line-height: 1.8;
+    font-style: italic;
+    text-align: center;
+  }
+  .closing-quote p { margin: 0; }
+
   /* ── mobile ── */
   @media (max-width: 700px) {
     .logo-container { padding: 60px 20px; }
@@ -903,12 +917,13 @@
     </form>
   </section>
 
-  <!-- FOOTER -->
-  <footer class="footer">
-    <div class="pull-quote" style="max-width:800px; margin:0 auto 30px; text-align:left;">
-      The signal is patient. It has been broadcasting for longer than anyone knows. It will continue long after Meridian Station is dust. The only question that matters is: what will you do now that you've heard it?
+  <!-- CLOSING QUOTE -->
+  <div class="section-divider"></div>
+  <section class="section" style="padding-bottom: 60px;">
+    <div class="closing-quote">
+      <p>The signal is patient. It has been broadcasting for longer than anyone knows. It will continue long after Meridian Station is dust. The only question that matters is: what will you do now that you've heard it?</p>
     </div>
-  </footer>
+  </section>
 </div>
 
 <!-- audio toggle -->
