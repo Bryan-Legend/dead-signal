@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dead Signal — Logo</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Electrolize&family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap');
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --cyan: #00f0ff;
+    --cyan-dim: #00707a;
+    --red: #ff2244;
+    --red-dim: #6b0015;
+    --white: #e0e8f0;
+    --dark: #04080c;
+    --signal-green: #00ff88;
+  }
+
+  body {
+    background: var(--dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow: hidden;
+    font-family: 'Orbitron', sans-serif;
+  }
+
+  /* ── starfield ── */
+  .starfield {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .starfield canvas {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* ── floating dust particles ── */
+  .dust {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+  .dust span {
+    position: absolute;
+    width: var(--size, 3px);
+    height: var(--size, 3px);
+    background: radial-gradient(circle, rgba(0,240,255,0.4), transparent);
+    border-radius: 50%;
+    animation: drift var(--drift-dur, 20s) linear infinite;
+    opacity: 0;
+  }
+  @keyframes drift {
+    0%   { transform: translate(0, 0) scale(0); opacity: 0; }
+    10%  { opacity: 0.6; }
+    90%  { opacity: 0.6; }
+    100% { transform: translate(var(--dx, 100px), var(--dy, -200px)) scale(1.5); opacity: 0; }
+  }
+
+  /* ── main container ── */
+  .logo-container {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 80px 120px;
+  }
+
+  /* ── audio toggle ── */
+  .audio-toggle {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 200;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--cyan-dim);
+    background: rgba(0,240,255,0.05);
+    border: 1px solid var(--cyan-dim);
+    padding: 8px 24px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    opacity: 0;
+    animation: fadeIn 1s ease forwards 3.5s;
+  }
+  .audio-toggle:hover {
+    color: var(--cyan);
+    border-color: var(--cyan);
+    background: rgba(0,240,255,0.1);
+    box-shadow: 0 0 15px rgba(0,240,255,0.15);
+  }
+  .audio-toggle.active {
+    color: var(--cyan);
+    border-color: var(--cyan);
+  }
+
+
+  /* ── the signal waveform ── */
+  .waveform-wrapper {
+    position: relative;
+    width: 600px;
+    height: 100px;
+    margin-bottom: 10px;
+    overflow: visible;
+  }
+  .waveform-svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    filter: drop-shadow(0 0 8px rgba(0,240,255,0.5));
+  }
+  .wave-path {
+    fill: none;
+    stroke: var(--cyan);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-dasharray: 1200;
+    stroke-dashoffset: 1200;
+    animation: drawWave 3s ease forwards, pulseGlow 3s ease-in-out infinite 3s;
+  }
+  .wave-path-ghost {
+    fill: none;
+    stroke: var(--red);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    opacity: 0.25;
+    stroke-dasharray: 1200;
+    stroke-dashoffset: 1200;
+    animation: drawWave 3s ease forwards 0.15s;
+    filter: blur(2px);
+  }
+  @keyframes drawWave {
+    to { stroke-dashoffset: 0; }
+  }
+  @keyframes pulseGlow {
+    0%, 100% { filter: drop-shadow(0 0 4px rgba(0,240,255,0.4)); stroke-width: 2; }
+    50%      { filter: drop-shadow(0 0 16px rgba(0,240,255,0.8)); stroke-width: 2.5; }
+  }
+
+  /* ── scanning beam across the waveform ── */
+  .scan-beam {
+    position: absolute;
+    top: 0;
+    left: -2px;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(180deg, transparent, var(--cyan), transparent);
+    opacity: 0;
+    animation: scanAcross 4s linear infinite 3.5s;
+    box-shadow: 0 0 20px 6px rgba(0,240,255,0.3);
+  }
+  @keyframes scanAcross {
+    0%   { left: -2%; opacity: 0; }
+    5%   { opacity: 0.8; }
+    95%  { opacity: 0.8; }
+    100% { left: 102%; opacity: 0; }
+  }
+
+  /* ── DEAD title ── */
+  .title-dead {
+    font-family: 'Electrolize', sans-serif;
+    font-weight: 400;
+    font-size: 120px;
+    letter-spacing: 36px;
+    text-indent: 36px;
+    color: transparent;
+    background: linear-gradient(180deg, #ffffff 0%, #90a0b0 40%, #304050 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    position: relative;
+    line-height: 1;
+    animation: revealTitle 1s ease forwards 0.5s;
+    opacity: 0;
+    filter: drop-shadow(0 0 30px rgba(0,240,255,0.15));
+  }
+  .title-dead::before {
+    content: 'DEAD';
+    position: absolute;
+    inset: 0;
+    color: transparent;
+    background: linear-gradient(180deg, var(--cyan) 0%, transparent 60%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    opacity: 0.15;
+    filter: blur(1px);
+  }
+  @keyframes revealTitle {
+    0%   { opacity: 0; transform: translateY(10px); letter-spacing: 60px; }
+    100% { opacity: 1; transform: translateY(0); letter-spacing: 36px; }
+  }
+
+  /* ── SIGNAL title ── */
+  .title-signal {
+    font-family: 'Electrolize', sans-serif;
+    font-weight: 400;
+    font-size: 78px;
+    letter-spacing: 22px;
+    text-indent: 22px;
+    color: var(--cyan);
+    position: relative;
+    line-height: 1;
+    margin-top: -8px;
+    animation: revealSignal 1.2s ease forwards 1s;
+    opacity: 0;
+    text-shadow:
+      0 0 10px rgba(0,240,255,0.5),
+      0 0 40px rgba(0,240,255,0.2),
+      0 0 80px rgba(0,240,255,0.1);
+  }
+  @keyframes revealSignal {
+    0%   { opacity: 0; transform: translateY(-10px); letter-spacing: 50px; }
+    100% { opacity: 1; transform: translateY(0); letter-spacing: 22px; }
+  }
+
+  /* ── glitch effect on both titles ── */
+  .glitch-wrapper {
+    position: relative;
+    display: inline-block;
+  }
+  .glitch-wrapper::before,
+  .glitch-wrapper::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .glitch-dead::before {
+    font-family: 'Electrolize', sans-serif;
+    font-weight: 400;
+    font-size: 120px;
+    letter-spacing: 36px;
+    color: transparent;
+    background: linear-gradient(180deg, #ffffff 0%, #90a0b0 40%, #304050 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: glitchTop 6s ease-in-out infinite;
+    clip-path: inset(0 0 65% 0);
+    text-shadow: -3px 0 var(--red);
+  }
+  .glitch-dead::after {
+    font-family: 'Electrolize', sans-serif;
+    font-weight: 400;
+    font-size: 120px;
+    letter-spacing: 36px;
+    color: transparent;
+    background: linear-gradient(180deg, #ffffff 0%, #90a0b0 40%, #304050 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: glitchBottom 6s ease-in-out infinite 0.1s;
+    clip-path: inset(60% 0 0 0);
+    text-shadow: 3px 0 var(--cyan);
+  }
+  .glitch-signal::before {
+    font-family: 'Electrolize', sans-serif;
+    font-weight: 400;
+    font-size: 78px;
+    letter-spacing: 22px;
+    color: var(--cyan);
+    animation: glitchTop 5s ease-in-out infinite 2s;
+    clip-path: inset(0 0 60% 0);
+    text-shadow: -2px 0 var(--red);
+  }
+  .glitch-signal::after {
+    font-family: 'Electrolize', sans-serif;
+    font-weight: 400;
+    font-size: 78px;
+    letter-spacing: 22px;
+    color: var(--cyan);
+    animation: glitchBottom 5s ease-in-out infinite 2.1s;
+    clip-path: inset(55% 0 0 0);
+    text-shadow: 2px 0 var(--signal-green);
+  }
+  @keyframes glitchTop {
+    0%, 88%, 92%, 100% { transform: translateX(0); opacity: 0; }
+    89% { transform: translateX(-8px) skewX(-2deg); opacity: 1; }
+    91% { transform: translateX(6px) skewX(1deg); opacity: 1; }
+  }
+  @keyframes glitchBottom {
+    0%, 88%, 93%, 100% { transform: translateX(0); opacity: 0; }
+    89.5% { transform: translateX(10px) skewX(3deg); opacity: 1; }
+    91.5% { transform: translateX(-5px) skewX(-1deg); opacity: 1; }
+  }
+
+  /* ── horizontal rule lines ── */
+  .hr-line {
+    width: 520px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan-dim), var(--cyan), var(--cyan-dim), transparent);
+    position: relative;
+    opacity: 0;
+    animation: fadeIn 1s ease forwards 1.5s;
+  }
+  .hr-line.top { margin-bottom: 18px; }
+  .hr-line.bottom { margin-top: 18px; }
+  .hr-line::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 8px;
+    height: 5px;
+    background: var(--cyan);
+    box-shadow: 0 0 10px var(--cyan);
+    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+  }
+  .hr-line.bottom::before {
+    top: auto;
+    bottom: -2px;
+    clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
+  }
+
+  /* ── subtitle ── */
+  .subtitle {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    letter-spacing: 10px;
+    text-indent: 10px;
+    color: var(--cyan-dim);
+    text-transform: uppercase;
+    margin-top: 22px;
+    opacity: 0;
+    animation: fadeIn 1.5s ease forwards 2s;
+  }
+
+  /* ── telemetry data readout ── */
+  .telemetry {
+    position: absolute;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--cyan-dim);
+    opacity: 0;
+    animation: fadeIn 1s ease forwards 2.5s;
+    white-space: nowrap;
+    letter-spacing: 2px;
+  }
+  .telemetry.top-left {
+    top: 12px;
+    left: 20px;
+  }
+  .telemetry.top-right {
+    top: 12px;
+    right: 20px;
+    text-align: right;
+  }
+  .telemetry.bottom-left {
+    bottom: 12px;
+    left: 20px;
+  }
+  .telemetry.bottom-right {
+    bottom: 12px;
+    right: 20px;
+    text-align: right;
+  }
+  .telemetry .blink {
+    animation: blink 1.5s step-end infinite;
+  }
+  @keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+  }
+  .telemetry .val {
+    color: var(--cyan);
+  }
+
+  /* ── corner brackets ── */
+  .corner {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    opacity: 0;
+    animation: fadeIn 1s ease forwards 2s;
+  }
+  .corner::before, .corner::after {
+    content: '';
+    position: absolute;
+    background: var(--cyan-dim);
+  }
+  .corner.tl { top: 0; left: 0; }
+  .corner.tr { top: 0; right: 0; }
+  .corner.bl { bottom: 0; left: 0; }
+  .corner.br { bottom: 0; right: 0; }
+  .corner.tl::before, .corner.bl::before { left: 0; width: 2px; }
+  .corner.tr::before, .corner.br::before { right: 0; width: 2px; }
+  .corner.tl::after, .corner.tr::after   { top: 0; height: 2px; }
+  .corner.bl::after, .corner.br::after   { bottom: 0; height: 2px; }
+  .corner.tl::before, .corner.tr::before { top: 0; height: 30px; }
+  .corner.bl::before, .corner.br::before { bottom: 0; height: 30px; }
+  .corner.tl::after, .corner.bl::after   { left: 0; width: 30px; }
+  .corner.tr::after, .corner.br::after   { right: 0; width: 30px; }
+
+  /* ── scanlines overlay ── */
+  .scanlines {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.08) 2px,
+      rgba(0,0,0,0.08) 4px
+    );
+  }
+
+  /* ── CRT vignette ── */
+  .vignette {
+    position: fixed;
+    inset: 0;
+    z-index: 99;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.6) 100%);
+  }
+
+  /* ── noise overlay ── */
+  .noise {
+    position: fixed;
+    inset: -50%;
+    z-index: 98;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-size: 256px 256px;
+    opacity: 0.025;
+    animation: noiseShift 0.5s steps(5) infinite;
+  }
+  @keyframes noiseShift {
+    0%   { transform: translate(0, 0); }
+    20%  { transform: translate(-5%, -5%); }
+    40%  { transform: translate(3%, 2%); }
+    60%  { transform: translate(-2%, 4%); }
+    80%  { transform: translate(4%, -3%); }
+    100% { transform: translate(0, 0); }
+  }
+
+  /* ── small signal strength bars ── */
+  .signal-bars {
+    display: flex;
+    gap: 3px;
+    align-items: flex-end;
+    margin-top: 20px;
+    opacity: 0;
+    animation: fadeIn 1s ease forwards 2.2s;
+  }
+  .signal-bars .bar {
+    width: 5px;
+    background: var(--cyan);
+    opacity: 0.3;
+    animation: barPulse 2s ease-in-out infinite;
+    animation-delay: var(--bar-delay, 0s);
+  }
+  @keyframes barPulse {
+    0%, 100% { opacity: 0.15; }
+    50%      { opacity: 0.9; box-shadow: 0 0 6px rgba(0,240,255,0.5); }
+  }
+
+  /* ── status line with typing effect ── */
+  .status-line {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--red);
+    letter-spacing: 3px;
+    margin-top: 28px;
+    opacity: 0;
+    animation: fadeIn 0.5s ease forwards 3s;
+    text-shadow: 0 0 10px rgba(255,34,68,0.4);
+  }
+  .status-line .cursor {
+    display: inline-block;
+    width: 7px;
+    height: 13px;
+    background: var(--red);
+    vertical-align: text-bottom;
+    animation: blink 1s step-end infinite;
+    margin-left: 2px;
+  }
+
+  /* ── the flatline that crosses through "DEAD" ── */
+  .flatline {
+    position: absolute;
+    top: 50%;
+    left: -40px;
+    right: -40px;
+    height: 2px;
+    transform: translateY(14px);
+    opacity: 0;
+    animation: flatlineIn 2s ease forwards 2.8s;
+  }
+  .flatline::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, var(--red-dim), var(--red), var(--red-dim), transparent);
+    animation: flatlinePulse 3s ease-in-out infinite 4.8s;
+  }
+  @keyframes flatlineIn {
+    0%   { opacity: 0; }
+    100% { opacity: 0.6; }
+  }
+  @keyframes flatlinePulse {
+    0%, 100% { opacity: 1; filter: brightness(1); }
+    50%      { opacity: 0.5; filter: brightness(1.5); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  /* ── hexagonal grid background element ── */
+  .hex-grid {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    opacity: 0.02;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='52' viewBox='0 0 60 52' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 15v22L30 52 0 37V15z' fill='none' stroke='%2300f0ff' stroke-width='0.5'/%3E%3C/svg%3E");
+    background-size: 60px 52px;
+  }
+</style>
+</head>
+<body>
+
+<!-- background layers -->
+<div class="hex-grid"></div>
+<div class="starfield"><canvas id="starCanvas"></canvas></div>
+<div class="dust" id="dust"></div>
+<div class="noise"></div>
+<div class="vignette"></div>
+<div class="scanlines"></div>
+
+<!-- main logo -->
+<div class="logo-container">
+
+  <!-- corner brackets -->
+  <div class="corner tl"></div>
+  <div class="corner tr"></div>
+  <div class="corner bl"></div>
+  <div class="corner br"></div>
+
+
+  <!-- telemetry readouts -->
+  <div class="telemetry top-left">
+    SYS//MERIDIAN-STATION<br>
+    SECTOR <span class="val">K-9817</span><br>
+    STATUS: <span class="val blink">MONITORING</span>
+  </div>
+  <div class="telemetry top-right">
+    SIGNAL LOCK: <span class="val">CONFIRMED</span><br>
+    FREQ: <span class="val" id="freq">0.0000 Hz</span><br>
+    DECAY: <span class="val" id="decay">0.000%</span>
+  </div>
+  <div class="telemetry bottom-left">
+    ORIGIN: <span class="val">UNKNOWN</span><br>
+    AGE: <span class="val">&gt;2.4M YEARS</span><br>
+    CLASSIFICATION: <span class="val blink">LEVEL-7 BLACK</span>
+  </div>
+  <div class="telemetry bottom-right">
+    CREW: <span class="val">847</span> / ACTIVE: <span class="val" id="active">847</span><br>
+    THREAT: <span class="val" style="color: var(--red);">INTERNAL</span><br>
+    <span class="val" id="timestamp">00:00:00.000</span>
+  </div>
+
+  <!-- top decorative line -->
+  <div class="hr-line top"></div>
+
+  <!-- waveform above the title -->
+  <div class="waveform-wrapper">
+    <svg class="waveform-svg" viewBox="0 0 600 100" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="waveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" style="stop-color:transparent"/>
+          <stop offset="15%" style="stop-color:#00f0ff"/>
+          <stop offset="50%" style="stop-color:#00f0ff"/>
+          <stop offset="85%" style="stop-color:#00f0ff"/>
+          <stop offset="100%" style="stop-color:transparent"/>
+        </linearGradient>
+      </defs>
+      <!-- ghost/echo wave (red, offset) -->
+      <path class="wave-path-ghost" d="M0,50 L80,50 L100,50 L120,50 L140,50
+        L155,50 L165,15 L175,85 L185,25 L195,75 L205,10 L215,90 L225,20 L235,80
+        L245,35 L255,65 L270,45 L285,55 L300,50
+        L320,50 L340,50
+        L360,50 L370,42 L380,58 L390,38 L400,62 L410,30 L420,70 L430,35 L440,65 L450,50
+        L470,50 L490,50 L510,50 L530,50 L550,50 L570,50 L600,50"/>
+      <!-- main signal wave -->
+      <path class="wave-path" stroke="url(#waveGrad)" d="M0,50 L80,50 L100,50 L120,50 L140,50
+        L155,50 L165,15 L175,85 L185,25 L195,75 L205,10 L215,90 L225,20 L235,80
+        L245,35 L255,65 L270,45 L285,55 L300,50
+        L320,50 L340,50
+        L360,50 L370,42 L380,58 L390,38 L400,62 L410,30 L420,70 L430,35 L440,65 L450,50
+        L470,50 L490,50 L510,50 L530,50 L550,50 L570,50 L600,50"/>
+    </svg>
+    <div class="scan-beam"></div>
+  </div>
+
+  <!-- DEAD -->
+  <div class="glitch-wrapper glitch-dead" data-text="DEAD" style="position:relative;">
+    <div class="title-dead">DEAD</div>
+    <div class="flatline"></div>
+  </div>
+
+  <!-- SIGNAL -->
+  <div class="glitch-wrapper glitch-signal" data-text="SIGNAL" style="margin-top: -4px;">
+    <div class="title-signal">SIGNAL</div>
+  </div>
+
+  <!-- bottom decorative line -->
+  <div class="hr-line bottom"></div>
+
+  <!-- signal strength bars -->
+  <div class="signal-bars" id="signalBars"></div>
+
+  <!-- subtitle -->
+  <div class="subtitle">Meridian Station</div>
+
+  <!-- status warning -->
+  <div class="status-line">
+    SIGNAL ANOMALY DETECTED — SOURCE UNRESOLVED<span class="cursor"></span>
+  </div>
+
+</div>
+
+<!-- audio toggle button -->
+<button class="audio-toggle" id="audioToggle">Enable Audio</button>
+
+<script>
+  // ── drifting starfield (canvas) ──
+  const canvas = document.getElementById('starCanvas');
+  const ctx = canvas.getContext('2d');
+  let cw, ch;
+
+  function resizeCanvas() {
+    cw = canvas.width = window.innerWidth;
+    ch = canvas.height = window.innerHeight;
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  // three layers: far (slow, dim, small), mid, near (fast, bright, big)
+  const layers = [
+    { count: 160, speed: 0.12, sizeMin: 0.5, sizeMax: 1.2, opacityMin: 0.15, opacityMax: 0.4 },
+    { count: 80,  speed: 0.3,  sizeMin: 1.0, sizeMax: 2.0, opacityMin: 0.3,  opacityMax: 0.7 },
+    { count: 30,  speed: 0.6,  sizeMin: 1.5, sizeMax: 3.0, opacityMin: 0.5,  opacityMax: 1.0 },
+  ];
+
+  const stars = [];
+  for (const layer of layers) {
+    for (let i = 0; i < layer.count; i++) {
+      stars.push({
+        x: Math.random() * 3000,  // use a wide field, wider than screen
+        y: Math.random() * 2000,
+        r: layer.sizeMin + Math.random() * (layer.sizeMax - layer.sizeMin),
+        baseOpacity: layer.opacityMin + Math.random() * (layer.opacityMax - layer.opacityMin),
+        twinkleSpeed: 0.5 + Math.random() * 2,
+        twinkleOffset: Math.random() * Math.PI * 2,
+        speed: layer.speed * (0.8 + Math.random() * 0.4),
+      });
+    }
+  }
+
+  let time = 0;
+  function drawStars() {
+    ctx.clearRect(0, 0, cw, ch);
+    time += 0.016;
+
+    for (const s of stars) {
+      // drift leftward, wrap around
+      s.x -= s.speed;
+      if (s.x < -5) s.x += cw + 10;
+
+      // twinkle
+      const twinkle = 0.6 + 0.4 * Math.sin(time * s.twinkleSpeed + s.twinkleOffset);
+      const alpha = s.baseOpacity * twinkle;
+
+      // blue tint near center, white at edges
+      const sx = s.x, sy = s.y % ch;
+      const dx = sx - cw * 0.5, dy = sy - ch * 0.5;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const maxDist = Math.sqrt(cw * cw + ch * ch) * 0.5;
+      const t = Math.min(dist / maxDist, 1);  // 0 = center, 1 = edge
+      // center: cyan-tinted (160,220,255), edge: cool white (220,230,255)
+      const r = Math.round(160 + t * 60);
+      const g = Math.round(220 + t * 10);
+
+      ctx.beginPath();
+      ctx.arc(sx, sy, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${r}, ${g}, 255, ${alpha})`;
+      ctx.fill();
+    }
+
+    requestAnimationFrame(drawStars);
+  }
+  drawStars();
+
+  // ── generate dust particles ──
+  const dust = document.getElementById('dust');
+  for (let i = 0; i < 30; i++) {
+    const p = document.createElement('span');
+    p.style.left = Math.random() * 100 + '%';
+    p.style.top = Math.random() * 100 + '%';
+    p.style.setProperty('--size', (2 + Math.random() * 4) + 'px');
+    p.style.setProperty('--drift-dur', (15 + Math.random() * 25) + 's');
+    p.style.setProperty('--dx', (-100 + Math.random() * 200) + 'px');
+    p.style.setProperty('--dy', (-150 + Math.random() * 300) + 'px');
+    p.style.animationDelay = (Math.random() * 20) + 's';
+    dust.appendChild(p);
+  }
+
+  // ── generate signal bars ──
+  const barsContainer = document.getElementById('signalBars');
+  for (let i = 0; i < 40; i++) {
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    const h = 3 + Math.random() * 18;
+    bar.style.height = h + 'px';
+    bar.style.setProperty('--bar-delay', (Math.random() * 2) + 's');
+    barsContainer.appendChild(bar);
+  }
+
+  // ── animate telemetry numbers ──
+  function animateTelemetry() {
+    const freq = document.getElementById('freq');
+    const decay = document.getElementById('decay');
+    const active = document.getElementById('active');
+    const ts = document.getElementById('timestamp');
+    let t = 0;
+    setInterval(() => {
+      t += 0.05;
+      freq.textContent = (47.3 + Math.sin(t * 0.7) * 0.08).toFixed(4) + ' Hz';
+      decay.textContent = (0.042 + Math.sin(t * 0.3) * 0.003).toFixed(3) + '%';
+      const crew = 847 - Math.floor(Math.random() < 0.01 ? 1 : 0);
+      active.textContent = crew;
+      const now = new Date();
+      ts.textContent = now.toTimeString().split(' ')[0] + '.' +
+        String(now.getMilliseconds()).padStart(3, '0');
+    }, 50);
+  }
+  animateTelemetry();
+
+  // ══════════════════════════════════════════
+  //  AUDIO ENGINE — Web Audio API (procedural)
+  // ══════════════════════════════════════════
+  let audioCtx = null;
+  let audioRunning = false;
+  let masterGain = null;
+  const audioNodes = [];
+
+  function initAudio() {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = 0;
+    masterGain.connect(audioCtx.destination);
+
+    // fade master in over 3 seconds
+    masterGain.gain.linearRampToValueAtTime(0.8, audioCtx.currentTime + 3);
+
+    startDeepDrone();
+    startSignalBeacon();
+    startSubHum();
+    startStaticCrackle();
+    startGlitchBursts();
+  }
+
+  // ── 1. Deep space drone — layered low oscillators with slow modulation ──
+  function startDeepDrone() {
+    const droneGain = audioCtx.createGain();
+    droneGain.gain.value = 0.12;
+    droneGain.connect(masterGain);
+    audioNodes.push(droneGain);
+
+    // base fundamental
+    const osc1 = audioCtx.createOscillator();
+    osc1.type = 'sine';
+    osc1.frequency.value = 38;
+    osc1.connect(droneGain);
+    osc1.start();
+    audioNodes.push(osc1);
+
+    // detuned second voice
+    const osc2 = audioCtx.createOscillator();
+    osc2.type = 'sine';
+    osc2.frequency.value = 38.7; // slow beat frequency with osc1
+    osc2.connect(droneGain);
+    osc2.start();
+    audioNodes.push(osc2);
+
+    // dark sawtooth layer an octave below
+    const oscSaw = audioCtx.createOscillator();
+    oscSaw.type = 'sawtooth';
+    oscSaw.frequency.value = 19;
+    const sawFilter = audioCtx.createBiquadFilter();
+    sawFilter.type = 'lowpass';
+    sawFilter.frequency.value = 60;
+    sawFilter.Q.value = 2;
+    const sawGain = audioCtx.createGain();
+    sawGain.gain.value = 0.06;
+    oscSaw.connect(sawFilter);
+    sawFilter.connect(sawGain);
+    sawGain.connect(masterGain);
+    oscSaw.start();
+    audioNodes.push(oscSaw, sawFilter, sawGain);
+
+    // slow LFO modulating drone volume for breathing effect
+    const lfo = audioCtx.createOscillator();
+    lfo.type = 'sine';
+    lfo.frequency.value = 0.08; // very slow
+    const lfoGain = audioCtx.createGain();
+    lfoGain.gain.value = 0.04;
+    lfo.connect(lfoGain);
+    lfoGain.connect(droneGain.gain);
+    lfo.start();
+    audioNodes.push(lfo, lfoGain);
+  }
+
+  // ── 2. Signal beacon — periodic ping with reverb tail ──
+  function startSignalBeacon() {
+    function ping() {
+      if (!audioRunning) return;
+
+      const pingGain = audioCtx.createGain();
+      pingGain.gain.value = 0;
+      pingGain.connect(masterGain);
+
+      // main ping tone
+      const osc = audioCtx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = 1174.7; // D6
+      osc.connect(pingGain);
+
+      // ghost harmonic
+      const osc2 = audioCtx.createOscillator();
+      osc2.type = 'sine';
+      osc2.frequency.value = 1760; // A6
+      const ghostGain = audioCtx.createGain();
+      ghostGain.gain.value = 0.3;
+      osc2.connect(ghostGain);
+      ghostGain.connect(pingGain);
+
+      const now = audioCtx.currentTime;
+      // sharp attack, long decay
+      pingGain.gain.setValueAtTime(0, now);
+      pingGain.gain.linearRampToValueAtTime(0.08, now + 0.008);
+      pingGain.gain.exponentialRampToValueAtTime(0.001, now + 2.5);
+
+      // pitch drops slightly during decay
+      osc.frequency.setValueAtTime(1174.7, now);
+      osc.frequency.exponentialRampToValueAtTime(1140, now + 2.5);
+
+      osc.start(now);
+      osc.stop(now + 2.8);
+      osc2.start(now);
+      osc2.stop(now + 2.8);
+
+      // schedule next ping with slight timing jitter
+      const nextDelay = 4.0 + (Math.random() - 0.5) * 0.6;
+      setTimeout(ping, nextDelay * 1000);
+    }
+    // first ping after 1.5s
+    setTimeout(ping, 1500);
+  }
+
+  // ── 3. Sub-bass hum — station reactor rumble ──
+  function startSubHum() {
+    const humGain = audioCtx.createGain();
+    humGain.gain.value = 0.08;
+    humGain.connect(masterGain);
+
+    const osc = audioCtx.createOscillator();
+    osc.type = 'triangle';
+    osc.frequency.value = 55; // low A
+
+    // slight vibrato
+    const vibrato = audioCtx.createOscillator();
+    vibrato.type = 'sine';
+    vibrato.frequency.value = 0.25;
+    const vibGain = audioCtx.createGain();
+    vibGain.gain.value = 1.5;
+    vibrato.connect(vibGain);
+    vibGain.connect(osc.frequency);
+
+    osc.connect(humGain);
+    osc.start();
+    vibrato.start();
+    audioNodes.push(osc, humGain, vibrato, vibGain);
+  }
+
+  // ── 4. Static crackle — filtered noise bursts ──
+  function startStaticCrackle() {
+    // create a noise buffer
+    const bufferSize = audioCtx.sampleRate * 2;
+    const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = (Math.random() * 2 - 1);
+    }
+
+    function crackle() {
+      if (!audioRunning) return;
+
+      const source = audioCtx.createBufferSource();
+      source.buffer = noiseBuffer;
+
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.value = 3000 + Math.random() * 5000;
+      filter.Q.value = 0.5 + Math.random() * 2;
+
+      const env = audioCtx.createGain();
+      env.gain.value = 0;
+
+      source.connect(filter);
+      filter.connect(env);
+      env.connect(masterGain);
+
+      const now = audioCtx.currentTime;
+      const duration = 0.02 + Math.random() * 0.08;
+      const volume = 0.01 + Math.random() * 0.025;
+
+      env.gain.setValueAtTime(0, now);
+      env.gain.linearRampToValueAtTime(volume, now + 0.003);
+      env.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+      source.start(now);
+      source.stop(now + duration + 0.01);
+
+      // random gap between crackles
+      const next = 100 + Math.random() * 600;
+      setTimeout(crackle, next);
+    }
+    setTimeout(crackle, 2000);
+  }
+
+  // ── 5. Glitch bursts — synced to CSS glitch timing (~every 5-6s) ──
+  function startGlitchBursts() {
+    const bufferSize = audioCtx.sampleRate;
+    const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = (Math.random() * 2 - 1);
+    }
+
+    function burst() {
+      if (!audioRunning) return;
+
+      // noise burst
+      const source = audioCtx.createBufferSource();
+      source.buffer = noiseBuffer;
+
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'highpass';
+      filter.frequency.value = 1500;
+
+      const env = audioCtx.createGain();
+      env.gain.value = 0;
+
+      source.connect(filter);
+      filter.connect(env);
+      env.connect(masterGain);
+
+      const now = audioCtx.currentTime;
+      // sharp staccato burst
+      env.gain.setValueAtTime(0, now);
+      env.gain.linearRampToValueAtTime(0.06, now + 0.005);
+      env.gain.setValueAtTime(0.06, now + 0.04);
+      env.gain.linearRampToValueAtTime(0, now + 0.06);
+      // second stutter hit
+      env.gain.linearRampToValueAtTime(0.04, now + 0.09);
+      env.gain.linearRampToValueAtTime(0, now + 0.14);
+
+      source.start(now);
+      source.stop(now + 0.2);
+
+      // distorted tone underneath
+      const glitchOsc = audioCtx.createOscillator();
+      glitchOsc.type = 'square';
+      glitchOsc.frequency.value = 80 + Math.random() * 200;
+      const glitchGain = audioCtx.createGain();
+      glitchGain.gain.value = 0;
+      const distFilter = audioCtx.createBiquadFilter();
+      distFilter.type = 'lowpass';
+      distFilter.frequency.value = 400;
+
+      glitchOsc.connect(distFilter);
+      distFilter.connect(glitchGain);
+      glitchGain.connect(masterGain);
+
+      glitchGain.gain.setValueAtTime(0, now);
+      glitchGain.gain.linearRampToValueAtTime(0.04, now + 0.01);
+      glitchGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
+
+      glitchOsc.start(now);
+      glitchOsc.stop(now + 0.2);
+
+      // roughly match the CSS glitch cycle (5-6s) with jitter
+      const next = 5000 + Math.random() * 2000;
+      setTimeout(burst, next);
+    }
+    setTimeout(burst, 4500);
+  }
+
+  // ── audio toggle ──
+  const toggleBtn = document.getElementById('audioToggle');
+  toggleBtn.addEventListener('click', () => {
+    if (!audioRunning) {
+      if (!audioCtx) initAudio();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      audioRunning = true;
+      masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
+      masterGain.gain.linearRampToValueAtTime(0.8, audioCtx.currentTime + 2);
+      toggleBtn.textContent = 'Mute Audio';
+      toggleBtn.classList.add('active');
+    } else {
+      audioRunning = false;
+      masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
+      masterGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 1.5);
+      toggleBtn.textContent = 'Enable Audio';
+      toggleBtn.classList.remove('active');
+    }
+  });
+</script>
+</body>
+</html>
